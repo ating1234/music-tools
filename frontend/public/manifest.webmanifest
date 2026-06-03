@@ -1,0 +1,17 @@
+{
+  "name": "Music Tools",
+  "short_name": "Music Tools",
+  "description": "Local music conversion, separation, pitch, tempo, and transcription tools.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#10100f",
+  "theme_color": "#ffbe63",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

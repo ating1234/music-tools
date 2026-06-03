@@ -1,0 +1,1584 @@
+/* Google Fonts 載入復古與現代字型 */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --color-wood-dark: #201006;
+  --color-wood-light: #44220e;
+  --color-panel-bg: #2b2e34;
+  --color-panel-dark: #121316;
+  --color-brass: #d4af37;
+  --color-amber-glow: #ffa217;
+  --color-amber-dim: #7c4b00;
+  --color-led-red: #ff3b30;
+  --color-led-green: #34c759;
+  
+  --font-studio: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Share Tech Mono', 'Courier New', Courier, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  color: #c4c7d0;
+  font-family: var(--font-studio);
+  background-color: #08090b;
+  background-image: 
+    radial-gradient(circle at 50% 50%, #121417 0%, #050607 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 4px);
+  padding: 30px 15px;
+}
+
+/* 擬真胡桃木機箱外框 (Vintage Walnut Wood Studio Cabinet) */
+.studio-cabinet {
+  max-width: 1260px;
+  margin: 0 auto;
+  background-color: #35190b;
+  /* 極逼真的深色實木木紋，帶有縱向木肌理、天然年輪與斑駁暗沉 */
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(20, 8, 2, 0.75) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(25, 10, 3, 0.8) 0%, transparent 35%),
+    linear-gradient(to right, rgba(0,0,0,0.6) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.7) 100%),
+    radial-gradient(ellipse at 50% -20%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.9) 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 12px),
+    repeating-linear-gradient(180deg, #2a1409 0px, #2a1409 4px, #3a1c0d 4px, #3a1c0d 8px, #1a0b04 8px, #1a0b04 12px);
+  background-blend-mode: multiply, multiply, multiply, overlay, overlay, normal;
+  padding: 30px;
+  border-radius: 14px;
+  /* 厚實的實木斜面邊框 (3D Beveled Wooden Frame) - 呈現風化磨損感 */
+  border: 18px solid #1e0d05;
+  border-top-color: #3f1e0d;   /* 頂部受光面較亮 */
+  border-left-color: #2e1509;
+  border-right-color: #150802;
+  border-bottom-color: #0b0401; /* 底部背光面極暗 */
+  box-shadow: 
+    0 50px 100px rgba(0, 0, 0, 0.95),
+    0 15px 30px rgba(0, 0, 0, 0.85),
+    inset 0 3px 8px rgba(255, 255, 255, 0.08),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.9),
+    /* 內側陰影 (與控制面板交界處的環境遮擋深溝，深藏手垢與油漬感) */
+    inset 0 0 25px rgba(0, 0, 0, 0.98);
+  position: relative;
+}
+.studio-cabinet::before {
+  content: '';
+  position: absolute;
+  top: -18px;
+  left: -18px;
+  right: -18px;
+  bottom: -18px;
+  /* 實木最外圈微反光線，調整為微弱斑駁的灰褐色 */
+  border: 1px solid rgba(212, 175, 55, 0.04);
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+/* 經典調音台機殼 (Studio Console Chassis) */
+.studio-console {
+  background-color: var(--color-panel-bg);
+  border: 4px solid #0a0b0d;
+  border-radius: 8px;
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.8),
+    inset 0 1px 2px rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 雙向拉絲鈦金屬面板背景 (Brushed Metal Panel) - 加入生鏽污垢 */
+.console-panel {
+  padding: 24px 26px 30px 26px;
+  position: relative;
+  background-color: #282a2f;
+  background-image: 
+    /* 氧化斑點、生鏽水漬與手汗垢疊加 */
+    radial-gradient(circle at 10% 15%, rgba(92, 46, 11, 0.12) 0%, transparent 20%),
+    radial-gradient(circle at 85% 70%, rgba(61, 41, 15, 0.16) 0%, transparent 35%),
+    radial-gradient(circle at 45% 90%, rgba(139, 90, 43, 0.1) 0%, transparent 25%),
+    /* 雙向金屬細拉絲 */
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.006) 0px, rgba(255, 255, 255, 0.006) 1px, transparent 1px, transparent 2px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.03) 0px, rgba(0, 0, 0, 0.03) 1px, transparent 1px, transparent 2px),
+    linear-gradient(180deg, #34373d 0%, #17181c 100%);
+  background-blend-mode: multiply, multiply, multiply, overlay, normal, normal;
+  box-shadow: 
+    inset 0 1px 2px rgba(255,255,255,0.06),
+    inset 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+/* 立體十字螺絲釘裝飾 (Realistic Metallic Cross Screws) - 鐵鏽舊化 */
+.screw {
+  width: 13px;
+  height: 13px;
+  /* 融入鐵鏽紅褐色漸層 */
+  background: radial-gradient(circle at 35% 35%, #d1d1d6 0%, #808084 30%, #5c2e0b 65%, #231103 100%);
+  border-radius: 50%;
+  position: absolute;
+  box-shadow: 
+    1px 2px 3px rgba(0,0,0,0.85),
+    inset -0.5px -0.5px 1px rgba(0,0,0,0.6),
+    /* 螺絲孔周圍鐵鏽微弱暈染 */
+    0 0 4px rgba(92, 46, 11, 0.45);
+  z-index: 10;
+}
+.screw::before {
+  content: '';
+  position: absolute;
+  top: 5.5px;
+  left: 2px;
+  width: 9px;
+  height: 2px;
+  background: #1f0f04; /* 生鏽深褐色槽 */
+}
+.screw::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5.5px;
+  width: 2px;
+  height: 9px;
+  background: #1f0f04;
+}
+.screw.top-left { top: 10px; left: 10px; }
+.screw.top-right { top: 10px; right: 10px; }
+.screw.bottom-left { bottom: 10px; left: 10px; }
+.screw.bottom-right { bottom: 10px; right: 10px; }
+
+/* 頂部儀表區 (Console Header) - 深色碳鋼面板，帶有拉絲氧化紋理 */
+.console-header {
+  display: grid;
+  grid-template-columns: 300px 1fr 240px 70px;
+  gap: 20px;
+  align-items: center;
+  border-bottom: 6px solid #1a1b1d;
+  border-top: 3.5px solid #b2b5bc;
+  padding: 24px 26px 20px 26px;
+  margin: -24px -26px 18px -26px; /* 撐滿至邊界 */
+  position: relative;
+  background-color: #a0a4ab;
+  background-image:
+    radial-gradient(circle at 85% 15%, rgba(92, 46, 11, 0.18) 0%, transparent 25%),
+    radial-gradient(circle at 10% 75%, rgba(0, 0, 0, 0.2) 0%, transparent 30%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 2px),
+    linear-gradient(180deg, #b8bbc2 0%, #81858e 100%);
+  background-blend-mode: multiply, normal, overlay, normal;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.45),
+    0 4px 10px rgba(0,0,0,0.65);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+@media (max-width: 992px) {
+  .console-header {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 16px;
+  }
+}
+
+.console-title {
+  display: flex;
+  flex-direction: column;
+}
+.console-title h1 {
+  font-size: 1.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #111827;
+  margin: 0;
+  text-shadow: 0px 1px 0px rgba(255,255,255,0.3), 0px -1px 0px rgba(0,0,0,0.3);
+}
+.console-title p {
+  font-size: 0.72rem;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin: 4px 0 0 0;
+  font-weight: 700;
+}
+.console-title .api-node {
+  font-family: var(--font-mono);
+  color: #4b5563;
+  font-size: 0.72rem;
+  margin-top: 5px;
+}
+
+/* 雙指針式 VU 表 (Dual Needle VU Meters) */
+.vu-meter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.vu-meters-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.vu-master-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 800;
+  color: #8c909e;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.vu-meter {
+  width: 110px;
+  height: 65px;
+  /* 泛黃老化紙質 */
+  background: radial-gradient(circle at 50% 100%, #e2d2aa 15%, #9b875c 100%);
+  /* 氧化微黑金屬 3D 邊框 */
+  border: 4px solid #6b6d72;
+  border-top-color: #9ea0a6;
+  border-left-color: #7b7c82;
+  border-right-color: #4f5054;
+  border-bottom-color: #2b2c2f;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 5px 12px rgba(0, 0, 0, 0.6),
+    inset 0 3px 6px rgba(0, 0, 0, 0.45);
+}
+/* 變黃老化玻璃蓋，高反光與微小刮痕 */
+.vu-meter::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    linear-gradient(135deg, rgba(255, 235, 180, 0.16) 0%, rgba(255, 220, 150, 0.06) 50%, transparent 50.5%, transparent 100%),
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.12) 0%, transparent 60%),
+    /* 模擬玻璃微細劃痕 */
+    repeating-linear-gradient(28deg, transparent, transparent 15px, rgba(255, 255, 255, 0.04) 15px, rgba(255, 255, 255, 0.04) 16px, transparent 16px, transparent 30px);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 概念圖右上方的黑色揚聲器金屬網罩 */
+.mesh-grill {
+  width: 60px;
+  height: 60px;
+  background-color: #16171a;
+  /* 網孔點狀圖案 */
+  background-image: 
+    radial-gradient(#000 25%, transparent 25%),
+    radial-gradient(#000 25%, transparent 25%);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  border: 3.5px solid #8e9196;
+  border-top-color: #d1d5db;
+  border-left-color: #b0b3b8;
+  border-right-color: #6b6d72;
+  border-bottom-color: #4b4c50;
+  border-radius: 8px;
+  box-shadow: 
+    0 4px 8px rgba(0,0,0,0.5),
+    inset 0 3px 5px rgba(0,0,0,0.85);
+  justify-self: end;
+}
+
+.vu-meter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 100%, rgba(255, 162, 23, 0.25) 0%, transparent 85%);
+  pointer-events: none;
+}
+
+.vu-meter-scale {
+  width: 85px;
+  height: 85px;
+  border: 1px dashed #402808;
+  border-radius: 50%;
+  position: absolute;
+  bottom: -42px;
+  left: 10px;
+  opacity: 0.55;
+}
+
+.vu-meter-scale::after {
+  content: '-20 -10 -5 0 +3';
+  font-family: var(--font-mono);
+  font-size: 6.5px;
+  font-weight: bold;
+  color: #402808;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 69px;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.vu-label {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 800;
+  color: #402808;
+}
+
+.vu-needle {
+  width: 1.5px;
+  height: 48px;
+  background-color: #c91827;
+  position: absolute;
+  bottom: 0;
+  left: 52px;
+  transform-origin: bottom center;
+  transform: rotate(-35deg);
+  transition: transform 0.08s cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+.vu-needle-pivot {
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #333, #111);
+  border: 1.5px solid #444;
+  border-radius: 50%;
+  position: absolute;
+  bottom: -5px;
+  left: 47px;
+}
+
+/* 電源配電盤 (6路控制) */
+.power-panel {
+  background-color: var(--color-panel-dark);
+  border: 2px solid #0a0b0d;
+  border-radius: 6px;
+  padding: 10px 14px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.power-panel-title {
+  font-size: 0.65rem;
+  color: #8c909e;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  border-bottom: 1px solid #23252a;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+.power-switches-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 14px;
+}
+
+.power-switch-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.015);
+  padding: 4px 8px;
+  border-radius: 4px;
+  justify-content: space-between;
+}
+
+.power-switch-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #c4c7d0;
+}
+
+/* 搖頭撥桿 (Toggle Lever Switch) - 擬真鍍鉻搖頭開關與六角螺帽 */
+.toggle-lever {
+  position: relative;
+  width: 24px;
+  height: 32px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-lever input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.switch-track {
+  width: 12px;
+  height: 24px;
+  background: #08090a;
+  border-radius: 6px;
+  border: 2px solid #5a5c61;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.95);
+  position: relative;
+}
+
+.switch-lever {
+  width: 14px;
+  height: 14px;
+  /* 鍍鉻螺帽 */
+  background: radial-gradient(circle, #f3f4f6 20%, #9ca3af 60%, #4b5563 100%);
+  border: 1px solid #374151;
+  border-radius: 50%;
+  box-shadow: 
+    0 3px 5px rgba(0,0,0,0.65),
+    inset 0 1px 1px rgba(255,255,255,0.85);
+  position: absolute;
+  left: -3px;
+  top: 11px;
+  transition: all 0.12s ease-out;
+}
+.switch-lever::before {
+  content: '';
+  position: absolute;
+  /* 立體鍍鉻開關桿 */
+  width: 4px;
+  height: 12px;
+  background: linear-gradient(to right, #ffffff, #d1d5db 40%, #9ca3af 70%, #4b5563 100%);
+  top: -10px;
+  left: 4px;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.toggle-lever input:checked + .switch-track .switch-lever {
+  top: -3px;
+}
+.toggle-lever input:checked + .switch-track .switch-lever::before {
+  top: 10px;
+}
+
+/* 指示 LED 燈 (LED Indicators) */
+.led-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #241212;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.9);
+  display: inline-block;
+  vertical-align: middle;
+}
+.led-indicator.on {
+  background-color: var(--color-led-red);
+  box-shadow: 0 0 6px var(--color-led-red);
+}
+.led-indicator.green.on {
+  background-color: var(--color-led-green);
+  box-shadow: 0 0 6px var(--color-led-green);
+}
+
+/* 復古點陣 LCD 顯示器 - 橫跨整片寬度 */
+.lcd-container {
+  grid-column: 1 / -1;
+  margin-bottom: 22px;
+  border: 2px solid #0f1012;
+  border-top-color: #3b3e46;
+  border-bottom-color: #0a0b0c;
+  border-radius: 6px;
+  background-color: var(--color-panel-dark);
+  padding: 14px;
+  box-shadow: 
+    0 6px 16px rgba(0,0,0,0.5),
+    inset 0 2px 4px rgba(0,0,0,0.85);
+  position: relative;
+}
+
+.lcd-display {
+  background-color: #1e1606;
+  background-image: 
+    radial-gradient(rgba(255, 162, 23, 0.08) 15%, transparent 20%),
+    linear-gradient(rgba(30, 22, 6, 0.98), rgba(12, 9, 3, 0.98));
+  background-size: 3px 3px, 100% 100%;
+  border: 3px solid #0d0e10;
+  border-radius: 6px;
+  padding: 14px 20px;
+  box-shadow: 
+    inset 0 4px 10px rgba(0, 0, 0, 0.95),
+    0 1px 1px rgba(255,255,255,0.06);
+  font-family: var(--font-mono);
+  min-height: 105px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  position: relative;
+}
+
+.lcd-header {
+  font-size: 0.65rem;
+  color: var(--color-amber-dim);
+  border-bottom: 1px solid rgba(255, 162, 23, 0.12);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.lcd-text-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+}
+
+.lcd-text {
+  color: var(--color-amber-glow);
+  text-shadow: 0 0 5px rgba(255, 162, 23, 0.7);
+  font-size: 0.85rem;
+  margin: 0;
+}
+.lcd-text strong {
+  color: #ea580c;
+}
+
+.lcd-progress-bar {
+  display: inline-block;
+  font-family: var(--font-mono);
+  color: var(--color-amber-glow);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+/* 雙層 3x2 聲道條排列網格 (Mixing Channel Strips 3x2 Grid) */
+.rack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+@media (max-width: 992px) {
+  .rack-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .rack-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 垂直聲道條 (Channel Strip) - 帶有油污、氧化泛黃的拉絲鋼面板 */
+.channel-strip {
+  background-color: #a0a4ab;
+  /* 縱向拉絲紋理 + 咖啡漬與鐵鏽斑疊加 */
+  background-image: 
+    radial-gradient(circle at 85% 15%, rgba(92, 46, 11, 0.18) 0%, transparent 25%),
+    radial-gradient(circle at 10% 75%, rgba(0, 0, 0, 0.2) 0%, transparent 30%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 2px),
+    linear-gradient(180deg, #b8bbc2 0%, #81858e 100%);
+  background-blend-mode: multiply, normal, overlay, normal;
+  border: 2px solid #4a4b50;
+  border-top: 3.5px solid #b2b5bc; /* 氧化磨損受光面 */
+  border-bottom: 6px solid #1a1b1d; /* 底部暗影 */
+  border-radius: 6px;
+  padding: 20px 18px;
+  box-shadow: 
+    0 10px 24px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1px rgba(255,255,255,0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 620px;
+  position: relative;
+  color: #2b303c; /* 印刷文字調為老化褪色深灰 */
+}
+
+/* 金屬裝飾條與聲道標號 */
+.channel-strip-header {
+  border-bottom: 2px dashed #8b8e96;
+  padding-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+}
+.channel-strip-header h2 {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #111827; /* 黑色標題 */
+  margin: 0 0 0 12px; /* 留出螺絲位置 */
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.channel-strip-header .ch-number {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: #4b5563; /* 深灰色 */
+  font-weight: bold;
+  margin-left: 12px;
+}
+
+.channel-desc {
+  font-size: 0.75rem;
+  color: #374151; /* 深灰色說明 */
+  line-height: 1.45;
+  margin: 0;
+  min-height: 44px; /* 固定高度以利對齊 */
+}
+
+/* 金屬遮線盲板 (Blank Metal Blind Panel) */
+.blind-panel {
+  background-color: #141517;
+  /* 工業金屬拉絲與通風孔條紋 */
+  background-image: 
+    repeating-linear-gradient(0deg, #18191d, #18191d 4px, #101113 4px, #101113 8px),
+    linear-gradient(90deg, rgba(0,0,0,0.45) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.45) 100%);
+  border: 2px solid #0a0b0d;
+  border-radius: 6px;
+  min-height: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  box-shadow: 
+    0 10px 24px rgba(0,0,0,0.65),
+    inset 0 0 25px rgba(0, 0, 0, 0.9);
+}
+.blind-panel-text {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #4b5563;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.05);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transform: rotate(90deg);
+  white-space: nowrap;
+}
+.blind-panel .screw {
+  opacity: 0.75;
+}
+
+/* 磁帶艙 (Tape Deck Box) */
+.tape-deck-zone {
+  border: 2px dashed #7f838d;
+  background-color: #0b0c0e;
+  border-radius: 6px;
+  padding: 16px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.9);
+  min-height: 95px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.tape-deck-zone:hover {
+  background-color: #121317;
+  border-color: #5a5c61;
+}
+.tape-deck-zone.dragging {
+  border-color: var(--color-amber-glow);
+  box-shadow: 
+    0 0 8px rgba(255, 162, 23, 0.2),
+    inset 0 3px 6px rgba(0,0,0,0.95);
+}
+.tape-deck-zone input {
+  display: none;
+}
+.tape-deck-text {
+  font-size: 0.74rem;
+  color: #9ca3af;
+  word-break: break-all;
+  line-height: 1.35;
+}
+.tape-deck-icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+/* YouTube 輸入框 */
+.console-input-text {
+  width: 100%;
+  background-color: #08090a;
+  border: 1.5px solid #374151;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.85);
+}
+.console-input-text:focus {
+  border-color: var(--color-amber-glow);
+}
+.console-input-text::placeholder {
+  color: #3b3e48;
+}
+
+/* 參數調節欄位 */
+.console-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.console-field-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #4b5563; /* 改為深灰色，襯托拉絲鋼面板 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 擬真復古膠木旋鈕與銅金刻度座 (Retro Bakelite Ridged Knob with Brass Dial) */
+.knob-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.knob-dial-wrapper {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  background: radial-gradient(circle, #202228 0%, #0d0e10 100%);
+  border-radius: 50%;
+  border: 2.5px solid #0b0c0d;
+  box-shadow: 
+    0 5px 8px rgba(0,0,0,0.55),
+    inset 0 1.5px 2px rgba(255,255,255,0.06),
+    inset 0 -2.5px 3px rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.knob-ticks {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 3px dotted var(--color-brass); /* 銅金色點狀刻度圈 */
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.knob-rotator {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  /* 黃銅拉絲 (Circular Brushed Brass) 偏光，加入微弱青綠色氧化綠鏽 (Verdigris) 與氧化黑斑 */
+  background: 
+    /* 中心黃銅亮蓋與陰影 */
+    radial-gradient(circle at 50% 50%, #ffe66d 0%, #c6930a 18%, #4a3804 28%, transparent 30%),
+    /* 不規則銅綠與氧化污斑 */
+    radial-gradient(circle at 25% 25%, rgba(46, 139, 87, 0.42) 0%, transparent 35%),
+    radial-gradient(circle at 70% 75%, rgba(139, 90, 43, 0.35) 0%, transparent 40%),
+    /* 黃銅拉絲偏光漸層 */
+    conic-gradient(
+      #c6930a 0deg, #ffd700 45deg, #e5b80b 90deg, #8b6508 150deg, 
+      #ffd700 210deg, #c6930a 270deg, #e5b80b 315deg, #c6930a 360deg
+    );
+  background-blend-mode: normal, multiply, multiply, normal;
+  border: 2px solid #2f2105;
+  box-shadow: 
+    0 5px 9px rgba(0,0,0,0.65),
+    inset 0 1px 1px rgba(255,255,255,0.35),
+    inset 0 -2px 3px rgba(0,0,0,0.85);
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.1s ease-out;
+}
+
+.knob-pointer {
+  width: 2.5px;
+  height: 14px;
+  background-color: #0c0d10; /* 老舊黑色蝕刻指針線 */
+  border: 0.5px solid rgba(0,0,0,0.6);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.15);
+  position: absolute;
+  top: 2px;
+  left: calc(50% - 1.25px);
+  border-radius: 1px;
+}
+
+.knob-value-display {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-brass); /* 與刻度相襯的銅金色 */
+  text-shadow: 0 0 4px rgba(212, 175, 55, 0.4);
+  margin-top: 2px;
+}
+
+/* 聲部選擇金屬開關組 */
+.stems-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stem-switch-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #0b0c0d;
+  border: 1px solid #1c1d22;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.stem-switch-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #d1d5db;
+}
+
+/* 移調垂直推子 (Console Vertical Fader) */
+.fader-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background-color: #08090b;
+  border: 2px solid #1c1d22;
+  border-radius: 6px;
+  padding: 14px 8px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.85);
+}
+
+.fader-scale-container {
+  display: flex;
+  height: 130px;
+  position: relative;
+  width: 54px;
+  justify-content: center;
+}
+
+.fader-scale-lines {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(to bottom, #4b5563 1px, transparent 1px),
+    linear-gradient(to bottom, #374151 1px, transparent 1px);
+  background-size: 100% 20px, 100% 5px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.fader-scale-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  color: #4b5563;
+  position: absolute;
+  left: 2px;
+}
+.fader-scale-labels.right {
+  left: auto;
+  right: 2px;
+}
+
+.console-fader-input-wrapper {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 16px;
+}
+
+.console-fader-input-wrapper input[type="range"] {
+  -webkit-appearance: none;
+  transform: rotate(-90deg);
+  width: 120px;
+  height: 3px;
+  background: #050506;
+  outline: none;
+  border: 1px solid #1c1d22;
+  position: absolute;
+  margin: 0;
+  left: -52px;
+}
+
+/* 鍍鉻與紅色對齊推子 */
+.console-fader-input-wrapper input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 28px;
+  /* 黑色磨砂陽極氧化推子，中間嵌入亮鍍鉻高光條與亮紅色對齊標示線 */
+  background: linear-gradient(to right, 
+    #18191c 0%, #2a2c30 25%, 
+    #7a7c82 38%, #f3f4f6 45%, #ff3b30 47%, #ff3b30 53%, #f3f4f6 55%, #7a7c82 62%, 
+    #2a2c30 75%, #18191c 100%
+  );
+  border: 2px solid #07080a;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 
+    0 6px 10px rgba(0, 0, 0, 0.8),
+    inset 0 1px 2px rgba(255,255,255,0.3);
+  position: relative;
+}
+.console-fader-input-wrapper input[type="range"]::-webkit-slider-thumb::after {
+  display: none; /* 已經在背景漸層中渲染對齊線 */
+}
+
+.studio-analysis-display {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5px;
+  background-color: #070809;
+  border: 1px solid #1c1d22;
+  border-radius: 4px;
+  padding: 8px 10px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.analysis-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.analysis-item span {
+  font-size: 0.65rem;
+  color: #4b5563;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+.analysis-item strong {
+  font-size: 0.74rem;
+  color: #e5e7eb;
+  font-family: var(--font-mono);
+}
+
+/* 老式下拉選單 */
+.console-select {
+  width: 100%;
+  background-color: #08090a;
+  border: 1.5px solid #374151;
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  outline: none;
+  cursor: pointer;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.85);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 11px;
+  padding-right: 24px;
+  -webkit-appearance: none;
+}
+
+/* 傳統彈簧式立體機械按鈕 (Tactile 3D Mechanical Buttons) */
+.console-btn {
+  /* 基底金屬灰，具微拱形漸層 */
+  background: linear-gradient(180deg, #5a6372 0%, #2b3341 100%);
+  /* 3D 機械按鍵的受光與背光邊框 */
+  border-top: 2px solid #8594ab;
+  border-left: 2px solid #6b7a91;
+  border-right: 2.5px solid #14171d;
+  border-bottom: 4px solid #0a0c10;
+  border-radius: 6px;
+  color: #f3f4f6;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 9px 16px;
+  cursor: pointer;
+  /* box-shadow 營造實體厚度與懸浮感 */
+  box-shadow: 
+    0 4.5px 0 #080a0e, /* 模擬按鈕厚度的硬邊暗影 */
+    0 7px 10px rgba(0, 0, 0, 0.65), /* 懸浮投影 */
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.25); /* 頂部邊緣反光 */
+  transition: all 0.08s ease;
+  text-shadow: 0 -1px 1px rgba(0,0,0,0.6);
+  position: relative;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto; /* 靠底部對齊 */
+}
+.console-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #6b7586 0%, #343e4c 100%);
+  color: #ffffff;
+}
+/* 按鍵按下時的物理位移與深度感 */
+.console-btn:active:not(:disabled) {
+  transform: translateY(4.5px); /* 完全壓下 */
+  border-top: 2.5px solid #14171d;
+  border-left: 2px solid #191c24;
+  border-right: 2px solid #4a5462;
+  border-bottom: 1.5px solid #5a6473;
+  box-shadow: 
+    0 0.5px 0 #080a0e, /* 厚度縮減為貼平 */
+    0 1.5px 3px rgba(0, 0, 0, 0.5),
+    inset 0 3px 5px rgba(0, 0, 0, 0.85); /* 強烈凹陷暗部內陰影 */
+}
+.console-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: translateY(3.5px);
+  border-top: 2px solid #14171d;
+  border-left: 2px solid #191c24;
+  box-shadow: 
+    0 1px 0 #080a0e,
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.console-btn.btn-accent {
+  background: linear-gradient(180deg, #ea580c 0%, #9a3412 100%);
+  border-top: 2.5px solid #f97316;
+  border-left: 2px solid #ea580c;
+  border-right: 2.5px solid #6c1f07;
+  border-bottom: 4px solid #451002;
+  color: #ffffff;
+  text-shadow: 0 -1px 1px rgba(0,0,0,0.5);
+}
+.console-btn.btn-accent:hover:not(:disabled) {
+  background: linear-gradient(180deg, #f97316 0%, #b45309 100%);
+}
+.console-btn.btn-accent:active:not(:disabled) {
+  transform: translateY(4.5px);
+  border-top: 2.5px solid #451002;
+  border-left: 2px solid #6c1f07;
+  border-right: 2px solid #f97316;
+  border-bottom: 1.5px solid #ea580c;
+  box-shadow: 
+    0 0.5px 0 #080a0e,
+    0 1.5px 3px rgba(0, 0, 0, 0.5),
+    inset 0 3px 5px rgba(0, 0, 0, 0.85);
+}
+.console-btn.btn-wide {
+  width: 100%;
+}
+
+/* 大型點擊發光 Dome 按鈕 */
+.dome-btn-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  position: relative;
+}
+
+.dome-button {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  /* 拋光亮銀色 3D 機械金屬座環 (Bezel) */
+  border: 5px solid #a8abb3;
+  border-top-color: #e5e7eb;
+  border-left-color: #d1d5db;
+  border-right-color: #787c86;
+  border-bottom-color: #4a4b52;
+  /* 溫暖橘色 Dome 半透明漸層 */
+  background: radial-gradient(circle at 35% 35%, #ffb03a 0%, #ea580c 60%, #9a3412 100%);
+  cursor: pointer;
+  box-shadow: 
+    0 0 0 4px #2c2f35, /* 外圈金屬座固定環 */
+    0 6px 12px rgba(0,0,0,0.75),
+    inset 0 3px 5px rgba(255, 255, 255, 0.45),
+    inset -3px -3px 5px rgba(0, 0, 0, 0.6);
+  transition: all 0.1s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dome-button::after {
+  content: 'START'; /* 固定印刷 START */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-family: var(--font-studio);
+  font-weight: 800;
+  font-size: 13px;
+  color: #1a0f02; /* 黑色絲印字體 */
+  text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+  letter-spacing: 0.05em;
+}
+.dome-button:hover {
+  background: radial-gradient(circle at 35% 35%, #ffc46b 0%, #f97316 60%, #b45309 100%);
+  box-shadow: 
+    0 0 0 4px #2c2f35,
+    0 0 18px rgba(250, 100, 10, 0.8), /* 橘紅色擴散發光 */
+    0 6px 12px rgba(0,0,0,0.75);
+}
+.dome-button:active {
+  transform: translateY(2.5px);
+  box-shadow: 
+    0 0 0 4px #2c2f35,
+    0 2px 4px rgba(0,0,0,0.8),
+    inset 0 3px 6px rgba(0,0,0,0.8);
+}
+.dome-button:disabled {
+  cursor: wait;
+  opacity: 0.9;
+  background: radial-gradient(circle at 35% 35%, #ffa217 0%, #b45309 70%, #7c2d12 100%);
+  box-shadow: 
+    0 0 0 4px #2c2f35,
+    0 0 25px rgba(255, 162, 23, 0.95), /* 工作中持續發光 */
+    0 4px 8px rgba(0,0,0,0.75);
+}
+.dome-button:disabled::after {
+  content: 'START';
+  color: #261101;
+  text-shadow: 0 0 4px rgba(255, 162, 23, 0.8);
+}
+.dome-btn-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #4b5563; /* 深灰 */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* 下載鏈結 (Cassette Slot Look) */
+.cassette-eject {
+  background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
+  border: 2px solid #022c22;
+  border-radius: 4px;
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--font-studio);
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 
+    0 3px 5px rgba(0,0,0,0.65),
+    inset 0 1px 1px rgba(255,255,255,0.25);
+  transition: all 0.12s;
+  text-align: center;
+  align-self: flex-start;
+  margin-top: auto;
+}
+.cassette-eject:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+}
+.cassette-eject::before {
+  content: '💾';
+}
+
+/* 紅色警示 LED 面板 */
+.alert-led-panel {
+  border-left: 3.5px solid var(--color-led-red);
+  background: rgba(255, 59, 48, 0.07);
+  border-radius: 3px;
+  color: #ffa49e;
+  padding: 6px 12px;
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  border: 1px solid rgba(255, 59, 48, 0.15);
+  border-left-width: 3.5px;
+  margin-top: 5px;
+}
+
+/* 側掛與左右大佈局 (Console Layout) */
+.studio-cabinet-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.main-rack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.audio-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.sidebar-rack {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pitch-tempo-rack-unit {
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .studio-cabinet-layout {
+    flex-direction: column;
+  }
+  .sidebar-rack {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .audio-modules-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Google 廣告機櫃化模組 (Rack-Integrated Ad Module) */
+.ad-module-container {
+  position: relative;
+  background-color: #16171a;
+  border: 2px solid #2d2f35;
+  border-top-color: #3b3d44;
+  border-bottom-color: #0b0c0d;
+  border-radius: 6px;
+  box-shadow: 
+    0 10px 20px rgba(0,0,0,0.8),
+    inset 0 1px 1px rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+
+/* 300x250 右側 VU Meter 廣告機組 */
+.ad-module-vu {
+  width: 320px;
+  height: 290px;
+  box-sizing: border-box;
+  padding: 10px 10px 15px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  background: linear-gradient(180deg, #202227 0%, #15171a 100%);
+}
+
+.ad-module-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid #2d2f35;
+  margin-bottom: 8px;
+}
+.ad-module-header span {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #8f929a;
+  letter-spacing: 1px;
+}
+
+/* AdBlocker / Fallback 盲板 */
+.ad-blind-fallback {
+  position: absolute;
+  top: 36px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  background-color: #383a40;
+  background-image: 
+    radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 80%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 2px),
+    linear-gradient(180deg, #44474f 0%, #292a2e 100%);
+  background-blend-mode: overlay, overlay, normal;
+  border: 1px dashed #161719;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ad-blind-text {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1.4;
+}
+
+.ad-blind-subtext {
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.2);
+  margin-top: 4px;
+}
+
+/* 模擬 VU 指針表 (Simulated VU Meter) */
+.simulated-vu-display {
+  width: 300px;
+  height: 230px;
+  position: relative;
+  background: #0f1012;
+  border: 1.5px solid #25272c;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 5px 15px rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.vu-face-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.vu-dial-path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 2;
+  stroke-dasharray: 2, 4;
+}
+
+.vu-scale-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: rgba(255, 255, 255, 0.35);
+  text-anchor: middle;
+}
+
+.vu-needle-simulated {
+  stroke: var(--color-amber-glow);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transform-origin: 150px 200px;
+  animation: vuNeedleWiggle 2.8s ease-in-out infinite;
+}
+
+@keyframes vuNeedleWiggle {
+  0%   { transform: rotate(-25deg); }
+  12%  { transform: rotate(15deg); }
+  25%  { transform: rotate(-5deg); }
+  37%  { transform: rotate(30deg); }
+  50%  { transform: rotate(-15deg); }
+  68%  { transform: rotate(5deg); }
+  80%  { transform: rotate(25deg); }
+  92%  { transform: rotate(-8deg); }
+  100% { transform: rotate(-25deg); }
+}
+
+/* 728x90 底部配電條橫幅 (Base Power Strip Ad) */
+.ad-module-power {
+  width: 100%;
+  height: 130px;
+  box-sizing: border-box;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, #18191c 0%, #0d0e10 100%);
+  border: 2px solid #202227;
+  border-top: 3.5px solid #2d2f35;
+  border-bottom: 6px solid #070809;
+  border-radius: 8px;
+  box-shadow: 
+    0 15px 30px rgba(0, 0, 0, 0.85),
+    inset 0 1px 1px rgba(255,255,255,0.05);
+  margin-top: 24px;
+  position: relative;
+}
+
+.power-sockets-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  opacity: 0.65;
+}
+
+@media (max-width: 880px) {
+  .power-sockets-group {
+    display: none;
+  }
+}
+
+.simulated-socket {
+  width: 32px;
+  height: 32px;
+  background: #0f1012;
+  border-radius: 50%;
+  border: 1.5px solid #282a30;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+}
+.simulated-socket::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 4px;
+  height: 8px;
+  background: #000;
+  border-radius: 1px;
+  box-shadow: 12px 0 0 #000;
+}
+.simulated-socket::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 14px;
+  width: 4px;
+  height: 6px;
+  background: #000;
+  border-radius: 2px 2px 0 0;
+}
+
+.power-switch-analog {
+  width: 44px;
+  height: 64px;
+  background: #070809;
+  border-radius: 4px;
+  border: 1.5px solid #23252a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.power-switch-rocker {
+  width: 26px;
+  height: 44px;
+  background: #c93b2b;
+  border-radius: 2px;
+  border-bottom: 4px solid #7c2017;
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.6),
+    inset 0 1px 2px rgba(255,255,255,0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.power-switch-rocker::after {
+  content: 'RESET';
+  font-family: var(--font-mono);
+  font-size: 6px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.5px;
+}
+
+.ad-banner-frame {
+  width: 728px;
+  height: 90px;
+  background: #08090a;
+  border: 1.5px solid #1f2125;
+  border-radius: 4px;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+@media (max-width: 780px) {
+  .ad-banner-frame {
+    width: 100%;
+  }
+}
+
+/* 短版聲道條與盲板，使高度可自適應內容縮減 (CH 01~03 Short Channels) */
+.channel-strip.short-channel {
+  min-height: 460px;
+  align-self: start;
+}
+.blind-panel.short-channel {
+  min-height: 460px;
+  align-self: start;
+}
+
+/* 微型搖頭撥桿選擇器 (Mini Toggle Switch Selector) (v8) */
+.lever-selector-mini {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgba(18, 19, 22, 0.4);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+  width: 100%;
+}
+
+.lever-selector-text {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #374151;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+
+/* ── Job History Panel ── */
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  flex-wrap: wrap;
+}
+
+.history-kind {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #ffbe63;
+  min-width: 120px;
+}
+
+.history-status {
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+.history-status.finished { color: #39ff14; background: rgba(57, 255, 20, 0.08); }
+.history-status.failed   { color: #ff3b30; background: rgba(255, 59, 48, 0.08); }
+.history-status.started  { color: #ffbe63; background: rgba(255, 190, 99, 0.08); }
+.history-status.queued   { color: #8c909e; background: rgba(140, 144, 158, 0.06); }
+
+.history-file {
+  font-size: 9px;
+  color: #6b7280;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
