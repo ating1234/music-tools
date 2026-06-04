@@ -56,7 +56,7 @@ function cleanApiBase(url: string): string {
 let clientPromise: Promise<any> | null = null;
 async function getClient() {
   if (!clientPromise) {
-    clientPromise = Client.connect(cleanApiBase(API_BASE));
+    clientPromise = Client.connect(cleanApiBase(API_BASE), { events: ["data", "status"] });
   }
   return clientPromise;
 }
@@ -100,28 +100,37 @@ export async function uploadWav(file: File): Promise<Job> {
     try {
       const app = await getClient();
       const submission = app.submit("/transform", [file, 0, 120]);
-      
-      submission.on("status", (evt: any) => {
-        if (evt.stage === 'pending') {
-          job.status = 'queued';
-          job.step = 'queued';
-          job.queue_position = evt.queue_position;
-        } else if (evt.stage === 'complete') {
-          job.status = 'finished';
-          job.step = 'finished';
-          job.progress = 100;
-        } else {
-          job.status = 'processing';
-          job.step = 'converting';
-          if (evt.progress_data && evt.progress_data[0]) {
-            job.progress = Math.round(evt.progress_data[0].progress * 100);
-          }
-        }
-        activeJobs.set(jobId, { ...job });
-      });
+      let lastData: any = null;
 
-      const result = await submission.check();
-      const fileObj = result.data[0];
+      for await (const msg of submission) {
+        if (msg.type === "status") {
+          const evt = msg as any;
+          if (evt.stage === 'pending') {
+            job.status = 'queued';
+            job.step = 'queued';
+            job.queue_position = evt.queue_position;
+          } else if (evt.stage === 'complete') {
+            job.status = 'finished';
+            job.step = 'finished';
+            job.progress = 100;
+          } else {
+            job.status = 'processing';
+            job.step = 'converting';
+            if (evt.progress_data && evt.progress_data[0]) {
+              job.progress = Math.round(evt.progress_data[0].progress * 100);
+            }
+          }
+          activeJobs.set(jobId, { ...job });
+        } else if (msg.type === "data") {
+          lastData = msg.data;
+        }
+      }
+
+      if (!lastData) {
+        throw new Error("沒有接收到返回的音訊資料");
+      }
+
+      const fileObj = lastData[0] as any;
       
       job.status = 'finished';
       job.step = 'finished';
@@ -186,28 +195,37 @@ export async function transformAudio(fileId: string, semitones: number, targetBp
     try {
       const app = await getClient();
       const submission = app.submit("/transform", [file, semitones, targetBpm]);
-      
-      submission.on("status", (evt: any) => {
-        if (evt.stage === 'pending') {
-          job.status = 'queued';
-          job.step = 'queued';
-          job.queue_position = evt.queue_position;
-        } else if (evt.stage === 'complete') {
-          job.status = 'finished';
-          job.step = 'finished';
-          job.progress = 100;
-        } else {
-          job.status = 'processing';
-          job.step = 'processing';
-          if (evt.progress_data && evt.progress_data[0]) {
-            job.progress = Math.round(evt.progress_data[0].progress * 100);
-          }
-        }
-        activeJobs.set(jobId, { ...job });
-      });
+      let lastData: any = null;
 
-      const result = await submission.check();
-      const fileObj = result.data[0];
+      for await (const msg of submission) {
+        if (msg.type === "status") {
+          const evt = msg as any;
+          if (evt.stage === 'pending') {
+            job.status = 'queued';
+            job.step = 'queued';
+            job.queue_position = evt.queue_position;
+          } else if (evt.stage === 'complete') {
+            job.status = 'finished';
+            job.step = 'finished';
+            job.progress = 100;
+          } else {
+            job.status = 'processing';
+            job.step = 'processing';
+            if (evt.progress_data && evt.progress_data[0]) {
+              job.progress = Math.round(evt.progress_data[0].progress * 100);
+            }
+          }
+          activeJobs.set(jobId, { ...job });
+        } else if (msg.type === "data") {
+          lastData = msg.data;
+        }
+      }
+
+      if (!lastData) {
+        throw new Error("沒有接收到變速變調的音訊資料");
+      }
+
+      const fileObj = lastData[0] as any;
       
       job.status = 'finished';
       job.step = 'finished';
@@ -244,28 +262,37 @@ export async function separateVocals(file: File): Promise<Job> {
     try {
       const app = await getClient();
       const submission = app.submit("/separate_vocals", [file]);
-      
-      submission.on("status", (evt: any) => {
-        if (evt.stage === 'pending') {
-          job.status = 'queued';
-          job.step = 'queued';
-          job.queue_position = evt.queue_position;
-        } else if (evt.stage === 'complete') {
-          job.status = 'finished';
-          job.step = 'finished';
-          job.progress = 100;
-        } else {
-          job.status = 'processing';
-          job.step = 'separating';
-          if (evt.progress_data && evt.progress_data[0]) {
-            job.progress = Math.round(evt.progress_data[0].progress * 100);
-          }
-        }
-        activeJobs.set(jobId, { ...job });
-      });
+      let lastData: any = null;
 
-      const result = await submission.check();
-      const fileObj = result.data[0];
+      for await (const msg of submission) {
+        if (msg.type === "status") {
+          const evt = msg as any;
+          if (evt.stage === 'pending') {
+            job.status = 'queued';
+            job.step = 'queued';
+            job.queue_position = evt.queue_position;
+          } else if (evt.stage === 'complete') {
+            job.status = 'finished';
+            job.step = 'finished';
+            job.progress = 100;
+          } else {
+            job.status = 'processing';
+            job.step = 'separating';
+            if (evt.progress_data && evt.progress_data[0]) {
+              job.progress = Math.round(evt.progress_data[0].progress * 100);
+            }
+          }
+          activeJobs.set(jobId, { ...job });
+        } else if (msg.type === "data") {
+          lastData = msg.data;
+        }
+      }
+
+      if (!lastData) {
+        throw new Error("沒有接收到人聲分離的壓縮資料");
+      }
+
+      const fileObj = lastData[0] as any;
       
       job.status = 'finished';
       job.step = 'finished';
@@ -302,28 +329,37 @@ export async function separateInstruments(file: File, stems: string[], quality: 
     try {
       const app = await getClient();
       const submission = app.submit("/separate_instruments", [file, stems, quality]);
-      
-      submission.on("status", (evt: any) => {
-        if (evt.stage === 'pending') {
-          job.status = 'queued';
-          job.step = 'queued';
-          job.queue_position = evt.queue_position;
-        } else if (evt.stage === 'complete') {
-          job.status = 'finished';
-          job.step = 'finished';
-          job.progress = 100;
-        } else {
-          job.status = 'processing';
-          job.step = 'separating';
-          if (evt.progress_data && evt.progress_data[0]) {
-            job.progress = Math.round(evt.progress_data[0].progress * 100);
-          }
-        }
-        activeJobs.set(jobId, { ...job });
-      });
+      let lastData: any = null;
 
-      const result = await submission.check();
-      const fileObj = result.data[0];
+      for await (const msg of submission) {
+        if (msg.type === "status") {
+          const evt = msg as any;
+          if (evt.stage === 'pending') {
+            job.status = 'queued';
+            job.step = 'queued';
+            job.queue_position = evt.queue_position;
+          } else if (evt.stage === 'complete') {
+            job.status = 'finished';
+            job.step = 'finished';
+            job.progress = 100;
+          } else {
+            job.status = 'processing';
+            job.step = 'separating';
+            if (evt.progress_data && evt.progress_data[0]) {
+              job.progress = Math.round(evt.progress_data[0].progress * 100);
+            }
+          }
+          activeJobs.set(jobId, { ...job });
+        } else if (msg.type === "data") {
+          lastData = msg.data;
+        }
+      }
+
+      if (!lastData) {
+        throw new Error("沒有接收到樂器分離的壓縮資料");
+      }
+
+      const fileObj = lastData[0] as any;
       
       job.status = 'finished';
       job.step = 'finished';
@@ -360,28 +396,37 @@ export async function createYoutubeJob(url: string): Promise<Job> {
     try {
       const app = await getClient();
       const submission = app.submit("/youtube", [url]);
-      
-      submission.on("status", (evt: any) => {
-        if (evt.stage === 'pending') {
-          job.status = 'queued';
-          job.step = 'queued';
-          job.queue_position = evt.queue_position;
-        } else if (evt.stage === 'complete') {
-          job.status = 'finished';
-          job.step = 'finished';
-          job.progress = 100;
-        } else {
-          job.status = 'processing';
-          job.step = 'downloading';
-          if (evt.progress_data && evt.progress_data[0]) {
-            job.progress = Math.round(evt.progress_data[0].progress * 100);
-          }
-        }
-        activeJobs.set(jobId, { ...job });
-      });
+      let lastData: any = null;
 
-      const result = await submission.check();
-      const fileObj = result.data[0];
+      for await (const msg of submission) {
+        if (msg.type === "status") {
+          const evt = msg as any;
+          if (evt.stage === 'pending') {
+            job.status = 'queued';
+            job.step = 'queued';
+            job.queue_position = evt.queue_position;
+          } else if (evt.stage === 'complete') {
+            job.status = 'finished';
+            job.step = 'finished';
+            job.progress = 100;
+          } else {
+            job.status = 'processing';
+            job.step = 'downloading';
+            if (evt.progress_data && evt.progress_data[0]) {
+              job.progress = Math.round(evt.progress_data[0].progress * 100);
+            }
+          }
+          activeJobs.set(jobId, { ...job });
+        } else if (msg.type === "data") {
+          lastData = msg.data;
+        }
+      }
+
+      if (!lastData) {
+        throw new Error("沒有接收到 YouTube 下載的音訊資料");
+      }
+
+      const fileObj = lastData[0] as any;
       
       job.status = 'finished';
       job.step = 'finished';
