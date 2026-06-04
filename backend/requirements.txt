@@ -5,11 +5,23 @@ redis==5.2.1
 rq==2.1.0
 pydantic==2.10.4
 certifi==2026.4.22
-setuptools==69.5.1
-demucs==4.0.1
-torch==2.5.1
-torchaudio==2.5.1
 soundfile==0.13.1
 librosa==0.11.0
 numpy==1.26.4
+requests==2.32.3
+torch
+torchaudio
+torchcodec
+gradio
+gradio-client
+dora-search
+einops
+julius
+lameenc
+openunmix
+
+
+
+
+
 

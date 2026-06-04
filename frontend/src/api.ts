@@ -31,10 +31,32 @@ const activeJobs = new Map<string, Job>();
 // 音訊分析暫存，用來儲存 File 物件以便後續 Transform 時可以呼叫
 const analyzedFiles = new Map<string, File>();
 
+// 自動清洗與相容網址格式，將各種輸入格式轉為 Gradio Client 最穩定的 Space ID 或乾淨 URL
+function cleanApiBase(url: string): string {
+  let clean = url.trim();
+  if (clean.endsWith("/")) {
+    clean = clean.slice(0, -1);
+  }
+  
+  // 匹配 https://huggingface.co/spaces/username/spacename 格式並轉為 username/spacename
+  const spaceMatch = clean.match(/huggingface\.co\/spaces\/([^/]+)\/([^/]+)/);
+  if (spaceMatch) {
+    return `${spaceMatch[1]}/${spaceMatch[2]}`;
+  }
+  
+  // 匹配 https://username-spacename.hf.space 并移除 https:// 和尾隨路由，保留乾淨網址
+  if (clean.startsWith("https://")) {
+    // 很多時候，Gradio 客戶端對 hf.space 裸網址支援較佳，亦可直接使用
+    return clean;
+  }
+  
+  return clean;
+}
+
 let clientPromise: Promise<any> | null = null;
 async function getClient() {
   if (!clientPromise) {
-    clientPromise = Client.connect(API_BASE);
+    clientPromise = Client.connect(cleanApiBase(API_BASE));
   }
   return clientPromise;
 }
