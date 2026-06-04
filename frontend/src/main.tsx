@@ -104,15 +104,27 @@ function App() {
   const [vocalVolume, setVocalVolume] = useState(8);
   const [vocalBoost, setVocalBoost] = useState(false);
 
-  // Polling logic for jobs
+  // Polling logic for jobs with temporary error tolerance
   useEffect(() => {
     if (!job || job.status === 'finished' || job.status === 'failed') return;
 
+    let consecutiveFailures = 0;
     const timer = window.setInterval(async () => {
       try {
-        setJob(await getJob(job.id));
+        const updatedJob = await getJob(job.id);
+        setJob(updatedJob);
+        consecutiveFailures = 0; // 成功連線，重置失敗計數
+        
+        // 任務若順利完成，清空之前的臨時連線錯誤
+        if (updatedJob.status === 'finished') {
+          setError(null);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : '查詢任務失敗');
+        consecutiveFailures++;
+        // 只有在連續失敗超過 5 次（約 7.5 秒連不上）時，才向使用者警報
+        if (consecutiveFailures > 5) {
+          setError(err instanceof Error ? err.message : '查詢任務失敗');
+        }
       }
     }, 1500);
 

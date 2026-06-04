@@ -1,3 +1,5 @@
+import { Client } from "@gradio/client";
+
 export type Job = {
   id: string;
   status: string;
@@ -19,96 +21,363 @@ export type AudioAnalysis = {
   bpm: number;
 };
 
-const defaultApiBase = `${window.location.protocol}//${window.location.hostname}:8005`;
+// 預設本地 Gradio Port，如果是生產環境請由 VITE_API_BASE_URL 指定 (指向 https://您的帳號-Space名稱.hf.space)
+const defaultApiBase = `http://localhost:7860`;
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || defaultApiBase;
 
-async function parseResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(body?.detail || `Request failed: ${response.status}`);
+// 虛擬記憶體 Job 倉庫，用來橋接 Gradio 的即時狀態與 main.tsx 的輪詢機制
+const activeJobs = new Map<string, Job>();
+
+// 音訊分析暫存，用來儲存 File 物件以便後續 Transform 時可以呼叫
+const analyzedFiles = new Map<string, File>();
+
+let clientPromise: Promise<any> | null = null;
+async function getClient() {
+  if (!clientPromise) {
+    clientPromise = Client.connect(API_BASE);
   }
-  return response.json() as Promise<T>;
+  return clientPromise;
 }
 
-export async function uploadWav(file: File): Promise<Job> {
-  const form = new FormData();
-  form.append('file', file);
-  const response = await fetch(`${API_BASE}/api/jobs/upload`, {
-    method: 'POST',
-    body: form,
-  });
-  return parseResponse<Job>(response);
-}
-
-export async function analyzeAudio(file: File): Promise<AudioAnalysis> {
-  const form = new FormData();
-  form.append('file', file);
-  const response = await fetch(`${API_BASE}/api/audio/analyze`, {
-    method: 'POST',
-    body: form,
-  });
-  return parseResponse<AudioAnalysis>(response);
-}
-
-export async function transformAudio(fileId: string, semitones: number, targetBpm: number): Promise<Job> {
-  const form = new FormData();
-  form.append('file_id', fileId);
-  form.append('semitones', String(semitones));
-  form.append('target_bpm', String(targetBpm));
-  const response = await fetch(`${API_BASE}/api/jobs/transform`, {
-    method: 'POST',
-    body: form,
-  });
-  return parseResponse<Job>(response);
-}
-export async function separateVocals(file: File): Promise<Job> {
-  const form = new FormData();
-  form.append('file', file);
-  const response = await fetch(`${API_BASE}/api/jobs/separate-vocals`, {
-    method: 'POST',
-    body: form,
-  });
-  return parseResponse<Job>(response);
-}
-
-export async function separateInstruments(file: File, stems: string[], quality: string): Promise<Job> {
-  const form = new FormData();
-  form.append('file', file);
-  for (const stem of stems) {
-    form.append('stems', stem);
-  }
-  form.append('quality', quality);
-  const response = await fetch(`${API_BASE}/api/jobs/separate-instruments`, {
-    method: 'POST',
-    body: form,
-  });
-  return parseResponse<Job>(response);
-}
-
-export async function createYoutubeJob(url: string): Promise<Job> {
-  const response = await fetch(`${API_BASE}/api/jobs/youtube`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url }),
-  });
-  return parseResponse<Job>(response);
+function generateId() {
+  return Math.random().toString(36).substring(2, 15);
 }
 
 export async function getJob(jobId: string): Promise<Job> {
-  const response = await fetch(`${API_BASE}/api/jobs/${jobId}`);
-  return parseResponse<Job>(response);
+  const job = activeJobs.get(jobId);
+  if (!job) {
+    throw new Error("Job not found");
+  }
+  return job;
 }
 
 export async function listJobs(): Promise<Job[]> {
-  const response = await fetch(`${API_BASE}/api/jobs`);
-  return parseResponse<Job[]>(response);
+  return Array.from(activeJobs.values());
 }
 
 export async function deleteJob(jobId: string): Promise<void> {
-  await fetch(`${API_BASE}/api/jobs/${jobId}`, { method: 'DELETE' });
+  activeJobs.delete(jobId);
+}
+
+// 1. WAV 轉檔 API (利用 Transform 的不變速不變調功能來包裝)
+export async function uploadWav(file: File): Promise<Job> {
+  const jobId = generateId();
+  const job: Job = {
+    id: jobId,
+    status: 'queued',
+    kind: 'wav_conversion',
+    step: 'queued',
+    progress: 0,
+    output_name: null,
+    download_url: null,
+    error: null
+  };
+  activeJobs.set(jobId, job);
+
+  void (async () => {
+    try {
+      const app = await getClient();
+      const submission = app.submit("/transform", [file, 0, 120]);
+      
+      submission.on("status", (evt: any) => {
+        if (evt.stage === 'pending') {
+          job.status = 'queued';
+          job.step = 'queued';
+          job.queue_position = evt.queue_position;
+        } else if (evt.stage === 'complete') {
+          job.status = 'finished';
+          job.step = 'finished';
+          job.progress = 100;
+        } else {
+          job.status = 'processing';
+          job.step = 'converting';
+          if (evt.progress_data && evt.progress_data[0]) {
+            job.progress = Math.round(evt.progress_data[0].progress * 100);
+          }
+        }
+        activeJobs.set(jobId, { ...job });
+      });
+
+      const result = await submission.check();
+      const fileObj = result.data[0];
+      
+      job.status = 'finished';
+      job.step = 'finished';
+      job.progress = 100;
+      job.output_name = fileObj.orig_name || 'output.mp3';
+      job.download_url = fileObj.url;
+      activeJobs.set(jobId, { ...job });
+    } catch (err) {
+      job.status = 'failed';
+      job.error = err instanceof Error ? err.message : String(err);
+      activeJobs.set(jobId, { ...job });
+    }
+  })();
+
+  return job;
+}
+
+// 2. 音訊分析 API (同步預測)
+export async function analyzeAudio(file: File): Promise<AudioAnalysis> {
+  const app = await getClient();
+  const result = await app.predict("/analyze", [file]);
+  const data = result.data[0] as any;
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  
+  const fileId = generateId();
+  // 將 File 實體存起來，給後續的 transformAudio 使用
+  analyzedFiles.set(fileId, file);
+  
+  return {
+    file_id: fileId,
+    filename: file.name,
+    key: data.key || 'C',
+    tonic: data.tonic || 'C',
+    mode: data.mode || 'major',
+    bpm: data.bpm || 120
+  };
+}
+
+// 3. 變速變調 API (藉由 analyzedFiles 拿到音訊 File)
+export async function transformAudio(fileId: string, semitones: number, targetBpm: number): Promise<Job> {
+  const file = analyzedFiles.get(fileId);
+  if (!file) {
+    throw new Error("找不到對應的音訊暫存檔案，請重新上傳並分析");
+  }
+
+  const jobId = generateId();
+  const job: Job = {
+    id: jobId,
+    status: 'queued',
+    kind: 'transform_audio',
+    step: 'queued',
+    progress: 0,
+    output_name: null,
+    download_url: null,
+    error: null
+  };
+  activeJobs.set(jobId, job);
+
+  void (async () => {
+    try {
+      const app = await getClient();
+      const submission = app.submit("/transform", [file, semitones, targetBpm]);
+      
+      submission.on("status", (evt: any) => {
+        if (evt.stage === 'pending') {
+          job.status = 'queued';
+          job.step = 'queued';
+          job.queue_position = evt.queue_position;
+        } else if (evt.stage === 'complete') {
+          job.status = 'finished';
+          job.step = 'finished';
+          job.progress = 100;
+        } else {
+          job.status = 'processing';
+          job.step = 'processing';
+          if (evt.progress_data && evt.progress_data[0]) {
+            job.progress = Math.round(evt.progress_data[0].progress * 100);
+          }
+        }
+        activeJobs.set(jobId, { ...job });
+      });
+
+      const result = await submission.check();
+      const fileObj = result.data[0];
+      
+      job.status = 'finished';
+      job.step = 'finished';
+      job.progress = 100;
+      job.output_name = fileObj.orig_name || 'transformed.mp3';
+      job.download_url = fileObj.url;
+      activeJobs.set(jobId, { ...job });
+    } catch (err) {
+      job.status = 'failed';
+      job.error = err instanceof Error ? err.message : String(err);
+      activeJobs.set(jobId, { ...job });
+    }
+  })();
+
+  return job;
+}
+
+// 4. 人聲分離 API
+export async function separateVocals(file: File): Promise<Job> {
+  const jobId = generateId();
+  const job: Job = {
+    id: jobId,
+    status: 'queued',
+    kind: 'separate_vocals',
+    step: 'queued',
+    progress: 0,
+    output_name: null,
+    download_url: null,
+    error: null
+  };
+  activeJobs.set(jobId, job);
+
+  void (async () => {
+    try {
+      const app = await getClient();
+      const submission = app.submit("/separate_vocals", [file]);
+      
+      submission.on("status", (evt: any) => {
+        if (evt.stage === 'pending') {
+          job.status = 'queued';
+          job.step = 'queued';
+          job.queue_position = evt.queue_position;
+        } else if (evt.stage === 'complete') {
+          job.status = 'finished';
+          job.step = 'finished';
+          job.progress = 100;
+        } else {
+          job.status = 'processing';
+          job.step = 'separating';
+          if (evt.progress_data && evt.progress_data[0]) {
+            job.progress = Math.round(evt.progress_data[0].progress * 100);
+          }
+        }
+        activeJobs.set(jobId, { ...job });
+      });
+
+      const result = await submission.check();
+      const fileObj = result.data[0];
+      
+      job.status = 'finished';
+      job.step = 'finished';
+      job.progress = 100;
+      job.output_name = 'vocals_accompaniment.zip';
+      job.download_url = fileObj.url;
+      activeJobs.set(jobId, { ...job });
+    } catch (err) {
+      job.status = 'failed';
+      job.error = err instanceof Error ? err.message : String(err);
+      activeJobs.set(jobId, { ...job });
+    }
+  })();
+
+  return job;
+}
+
+// 5. 樂器分離 API
+export async function separateInstruments(file: File, stems: string[], quality: string): Promise<Job> {
+  const jobId = generateId();
+  const job: Job = {
+    id: jobId,
+    status: 'queued',
+    kind: 'separate_instruments',
+    step: 'queued',
+    progress: 0,
+    output_name: null,
+    download_url: null,
+    error: null
+  };
+  activeJobs.set(jobId, job);
+
+  void (async () => {
+    try {
+      const app = await getClient();
+      const submission = app.submit("/separate_instruments", [file, stems, quality]);
+      
+      submission.on("status", (evt: any) => {
+        if (evt.stage === 'pending') {
+          job.status = 'queued';
+          job.step = 'queued';
+          job.queue_position = evt.queue_position;
+        } else if (evt.stage === 'complete') {
+          job.status = 'finished';
+          job.step = 'finished';
+          job.progress = 100;
+        } else {
+          job.status = 'processing';
+          job.step = 'separating';
+          if (evt.progress_data && evt.progress_data[0]) {
+            job.progress = Math.round(evt.progress_data[0].progress * 100);
+          }
+        }
+        activeJobs.set(jobId, { ...job });
+      });
+
+      const result = await submission.check();
+      const fileObj = result.data[0];
+      
+      job.status = 'finished';
+      job.step = 'finished';
+      job.progress = 100;
+      job.output_name = 'instruments.zip';
+      job.download_url = fileObj.url;
+      activeJobs.set(jobId, { ...job });
+    } catch (err) {
+      job.status = 'failed';
+      job.error = err instanceof Error ? err.message : String(err);
+      activeJobs.set(jobId, { ...job });
+    }
+  })();
+
+  return job;
+}
+
+// 6. YouTube 轉檔 API
+export async function createYoutubeJob(url: string): Promise<Job> {
+  const jobId = generateId();
+  const job: Job = {
+    id: jobId,
+    status: 'queued',
+    kind: 'youtube_to_mp3',
+    step: 'queued',
+    progress: 0,
+    output_name: null,
+    download_url: null,
+    error: null
+  };
+  activeJobs.set(jobId, job);
+
+  void (async () => {
+    try {
+      const app = await getClient();
+      const submission = app.submit("/youtube", [url]);
+      
+      submission.on("status", (evt: any) => {
+        if (evt.stage === 'pending') {
+          job.status = 'queued';
+          job.step = 'queued';
+          job.queue_position = evt.queue_position;
+        } else if (evt.stage === 'complete') {
+          job.status = 'finished';
+          job.step = 'finished';
+          job.progress = 100;
+        } else {
+          job.status = 'processing';
+          job.step = 'downloading';
+          if (evt.progress_data && evt.progress_data[0]) {
+            job.progress = Math.round(evt.progress_data[0].progress * 100);
+          }
+        }
+        activeJobs.set(jobId, { ...job });
+      });
+
+      const result = await submission.check();
+      const fileObj = result.data[0];
+      
+      job.status = 'finished';
+      job.step = 'finished';
+      job.progress = 100;
+      job.output_name = fileObj.orig_name || 'youtube.mp3';
+      job.download_url = fileObj.url;
+      activeJobs.set(jobId, { ...job });
+    } catch (err) {
+      job.status = 'failed';
+      job.error = err instanceof Error ? err.message : String(err);
+      activeJobs.set(jobId, { ...job });
+    }
+  })();
+
+  return job;
 }
 
 export function downloadUrl(job: Job): string | null {
-  if (!job.download_url) return null;
-  return `${API_BASE}${job.download_url}`;
+  // Gradio 返回的 url 已經是完整的 HTTPS 下載網址，直接返回即可
+  return job.download_url;
 }
