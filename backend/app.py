@@ -54,19 +54,21 @@ def transform_api(audio_file, semitones, target_bpm):
         out_dir.mkdir(parents=True, exist_ok=True)
         output_path = out_dir / f"transform_{semitones}_{target_bpm}.mp3"
         
+        work_dir = STORAGE_DIR / "work_transform"
         local_transform_audio(
             Path(audio_file),
             output_path,
             semitones=int(semitones),
             source_bpm=float(source_bpm),
-            target_bpm=float(target_bpm)
+            target_bpm=float(target_bpm),
+            work_dir=work_dir
         )
         return str(output_path)
     except Exception as e:
         raise gr.Error(f"處理失敗: {str(e)}")
 
 # 3. 人聲分離 API (不再需要 GPU，因為外包給了 abidlabs/music-separation)
-def separate_vocals_api(audio_file):
+def separate_vocals_api(audio_file, progress=gr.Progress(track_tqdm=True)):
     if not audio_file:
         return None
     try:
@@ -75,13 +77,18 @@ def separate_vocals_api(audio_file):
         output_zip.parent.mkdir(parents=True, exist_ok=True)
         
         # 呼叫底層分離 (在背景透過 API 外包計算)
-        local_separate_vocals(Path(audio_file), work_dir, output_zip)
+        local_separate_vocals(
+            Path(audio_file), 
+            work_dir, 
+            output_zip, 
+            progress_callback=lambda p: progress(p / 100.0, desc="人聲分離中...")
+        )
         return str(output_zip)
     except Exception as e:
         raise gr.Error(f"分離人聲失敗: {str(e)}")
 
 # 4. 樂器分離 API (在本地 CPU 上運行)
-def separate_instruments_api(audio_file, stems, quality):
+def separate_instruments_api(audio_file, stems, quality, progress=gr.Progress(track_tqdm=True)):
     if not audio_file or not stems:
         return None
     try:
@@ -101,7 +108,8 @@ def separate_instruments_api(audio_file, stems, quality):
             work_dir,
             output_zip,
             selected_stems=stems,
-            shifts=shifts
+            shifts=shifts,
+            progress_callback=lambda p: progress(p / 100.0, desc="樂器分離中...")
         )
         return str(output_zip)
     except Exception as e:

@@ -113,6 +113,10 @@ export async function uploadWav(file: File): Promise<Job> {
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
+          } else if (evt.stage === 'error') {
+            job.status = 'failed';
+            job.step = 'failed';
+            job.error = evt.message || '音訊轉檔失敗';
           } else {
             job.status = 'processing';
             job.step = 'converting';
@@ -208,6 +212,10 @@ export async function transformAudio(fileId: string, semitones: number, targetBp
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
+          } else if (evt.stage === 'error') {
+            job.status = 'failed';
+            job.step = 'failed';
+            job.error = evt.message || '變速變調失敗';
           } else {
             job.status = 'processing';
             job.step = 'processing';
@@ -275,6 +283,10 @@ export async function separateVocals(file: File): Promise<Job> {
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
+          } else if (evt.stage === 'error') {
+            job.status = 'failed';
+            job.step = 'failed';
+            job.error = evt.message || '人聲分離失敗';
           } else {
             job.status = 'processing';
             job.step = 'separating';
@@ -342,6 +354,10 @@ export async function separateInstruments(file: File, stems: string[], quality: 
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
+          } else if (evt.stage === 'error') {
+            job.status = 'failed';
+            job.step = 'failed';
+            job.error = evt.message || '樂器分離失敗';
           } else {
             job.status = 'processing';
             job.step = 'separating';
@@ -409,6 +425,10 @@ export async function createYoutubeJob(url: string): Promise<Job> {
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
+          } else if (evt.stage === 'error') {
+            job.status = 'failed';
+            job.step = 'failed';
+            job.error = evt.message || 'YouTube下載失敗';
           } else {
             job.status = 'processing';
             job.step = 'downloading';

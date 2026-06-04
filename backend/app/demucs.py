@@ -32,23 +32,24 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
     if progress_callback:
         progress_callback(10)
 
-    from gradio_client import Client
-    
-    if progress_callback:
-        progress_callback(20)
-
+    # 嘗試使用外部 GPU Space 以獲得 15 秒的極速體驗
+    gpu_error = None
     try:
-        # 連線至公開的免費 ZeroGPU 空間（abidlabs/music-separation）
+        from gradio_client import Client
+        
+        if progress_callback:
+            progress_callback(20)
+
+        print("正在嘗試連線至外部 GPU Space 進行人聲分離...")
         client = Client("abidlabs/music-separation")
         
         if progress_callback:
-            progress_callback(40)
+            progress_callback(30)
 
         # 執行預測。Gradio Client 會自動將 input_path 上傳並等待 A100 GPU 運算完成
-        # 對方接口會返回已下載到本機暫存目錄的 (vocals_path, no_vocals_path)
         result = client.predict(
             audio=str(input_path),
-            api_name="/predict"
+            api_name="/inference"
         )
         
         vocals_wav_path, accompaniment_wav_path = result
@@ -57,7 +58,6 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
             progress_callback(80)
 
         # 轉為 MP3 並壓縮成 ZIP
-        # 因為對方返回的已經是本地臨時 WAV 檔案路徑，我們可以直接使用它們進行壓縮
         _zip_mp3s(output_path, {
             "vocals": Path(vocals_wav_path), 
             "accompaniment": Path(accompaniment_wav_path)
@@ -65,9 +65,63 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
         
         if progress_callback:
             progress_callback(96)
-
+        return  # 成功完成，直接返回
+        
     except Exception as e:
-        raise RuntimeError(f"透過外部 GPU 分離人聲失敗，請改用本地分離。錯誤原因: {str(e)}")
+        gpu_error = str(e)
+        print(f"外部 GPU 分離失敗 (可能是限流)，原因: {gpu_error}。將自動切換為本地 CPU 分離...")
+        
+        if progress_callback:
+            progress_callback(35)
+
+    # Fallback: 本地 CPU 分離
+    try:
+        import demucs.api
+        
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        # 人聲分離使用預設的 htdemucs 模型 (這比 6s 更輕量，更適合 CPU)
+        separator = demucs.api.Separator(
+            model="htdemucs",
+            device=device,
+            shifts=0
+        )
+        
+        if progress_callback:
+            progress_callback(45)
+
+        origin, separated = separator.separate_audio_file(str(input_path))
+        
+        if progress_callback:
+            progress_callback(80)
+
+        work_dir.mkdir(parents=True, exist_ok=True)
+        vocals_wav = work_dir / "vocals.wav"
+        accompaniment_wav = work_dir / "accompaniment.wav"
+        
+        # 儲存 vocals 軌道
+        demucs.api.save_audio(separated["vocals"], str(vocals_wav), samplerate=separator.samplerate)
+        
+        # 混音其餘的軌道作為伴奏 (accompaniment = drums + bass + other)
+        # 在 htdemucs 模型中，stems 為: vocals, drums, bass, other
+        accompaniment_stems = [separated[stem] for stem in ["drums", "bass", "other"] if stem in separated]
+        
+        # 將伴奏的所有 stems 混音
+        acc_tensor = sum(accompaniment_stems)
+        demucs.api.save_audio(acc_tensor, str(accompaniment_wav), samplerate=separator.samplerate)
+        
+        if progress_callback:
+            progress_callback(90)
+
+        _zip_mp3s(output_path, {
+            "vocals": vocals_wav,
+            "accompaniment": accompaniment_wav
+        })
+        
+        if progress_callback:
+            progress_callback(96)
+            
+    except Exception as local_err:
+        raise RuntimeError(f"人聲分離失敗。外部 GPU 限流錯誤: {gpu_error}。本地 CPU 處理錯誤: {str(local_err)}")
 
 
 def separate_instruments(
