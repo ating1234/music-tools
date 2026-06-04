@@ -90,6 +90,33 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<Job[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  // 手機版單頁 RWD 選單狀態
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeMobileModule, setActiveMobileModule] = useState<'menu' | 'wav' | 'youtube' | 'vocal' | 'stems' | 'pitch'>('menu');
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const selectMobileModule = (module: 'menu' | 'wav' | 'youtube' | 'vocal' | 'stems' | 'pitch') => {
+    setActiveMobileModule(module);
+    if (module === 'wav') {
+      setShowWav(true);
+    } else if (module === 'youtube') {
+      setShowYoutube(true);
+    } else if (module === 'vocal') {
+      setShowVocalSep(true);
+    } else if (module === 'stems') {
+      setShowStemsSep(true);
+    } else if (module === 'pitch') {
+      setShowPitch(true);
+    }
+  };
 
   // CH 01 - 03 Newly Added Hardware States (v8)
   const [wavBitrate, setWavBitrate] = useState('320');
@@ -425,10 +452,73 @@ function App() {
           <div className="studio-cabinet-layout">
             {/* Left Column: 主要音訊處理模組 */}
             <div className="main-rack">
-              <div className="audio-modules-grid">
+              {/* 手機版返回選單按鈕 */}
+              {isMobile && activeMobileModule !== 'menu' && (
+                <button 
+                  type="button" 
+                  className="console-btn mobile-back-btn" 
+                  onClick={() => setActiveMobileModule('menu')}
+                >
+                  [ ← RETURN TO STUDIO MENU ]
+                </button>
+              )}
+
+              {/* 手機版功能主選單 */}
+              {isMobile && activeMobileModule === 'menu' && (
+                <div className="mobile-menu-grid">
+                  <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('wav')}>
+                    <div className="card-led" />
+                    <div className="card-header">
+                      <span className="card-ch">CH 01</span>
+                      <h3>📀 {UI_TEXT.wavConverter.title}</h3>
+                    </div>
+                    <p>{UI_TEXT.wavConverter.desc}</p>
+                  </button>
+                  
+                  <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('youtube')}>
+                    <div className="card-led green" />
+                    <div className="card-header">
+                      <span className="card-ch">CH 02</span>
+                      <h3>📺 {UI_TEXT.ytExtractor.title}</h3>
+                    </div>
+                    <p>{UI_TEXT.ytExtractor.desc}</p>
+                  </button>
+
+                  <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('vocal')}>
+                    <div className="card-led green" />
+                    <div className="card-header">
+                      <span className="card-ch">CH 03</span>
+                      <h3>🎙️ {UI_TEXT.vocalSeparator.title}</h3>
+                    </div>
+                    <p>{UI_TEXT.vocalSeparator.desc}</p>
+                  </button>
+
+                  <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('stems')}>
+                    <div className="card-led green" />
+                    <div className="card-header">
+                      <span className="card-ch">CH 04</span>
+                      <h3>🎸 {UI_TEXT.stemsSeparator.title}</h3>
+                    </div>
+                    <p>{UI_TEXT.stemsSeparator.desc}</p>
+                  </button>
+
+                  <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('pitch')}>
+                    <div className="card-led green" />
+                    <div className="card-header">
+                      <span className="card-ch">CH 05</span>
+                      <h3>🎛️ {UI_TEXT.pitch.title}</h3>
+                    </div>
+                    <p>{UI_TEXT.pitch.desc}</p>
+                  </button>
+                </div>
+              )}
+
+              {/* 只有在非手機端，或者在手機端且有選中 CH01~CH04 時才渲染此 grid */}
+              {(!isMobile || ['wav', 'youtube', 'vocal', 'stems'].includes(activeMobileModule)) && (
+                <div className="audio-modules-grid">
 
             {/* CH 01: WAV TO MP3 */}
-            {showWav ? (
+            {(!isMobile && showWav) || (isMobile && activeMobileModule === 'wav') ? (
               <div className="channel-strip short-channel">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -518,7 +608,7 @@ function App() {
                   </button>
                 </form>
               </div>
-            ) : (
+            ) : (!isMobile ? (
               <div className="blind-panel short-channel">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -526,10 +616,10 @@ function App() {
                 <div className="screw bottom-right" />
                 <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 01</div>
               </div>
-            )}
+            ) : null)}
 
             {/* CH 02: YOUTUBE TO MP3 */}
-            {showYoutube ? (
+            {(!isMobile && showYoutube) || (isMobile && activeMobileModule === 'youtube') ? (
               <div className="channel-strip short-channel">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -632,7 +722,7 @@ function App() {
                   </button>
                 </form>
               </div>
-            ) : (
+            ) : (!isMobile ? (
               <div className="blind-panel short-channel">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -640,10 +730,10 @@ function App() {
                 <div className="screw bottom-right" />
                 <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 02</div>
               </div>
-            )}
+            ) : null)}
 
             {/* CH 03: VOCAL SEPARATOR */}
-            {showVocalSep ? (
+            {(!isMobile && showVocalSep) || (isMobile && activeMobileModule === 'vocal') ? (
               <div className="channel-strip short-channel">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -748,7 +838,7 @@ function App() {
                   </button>
                 </form>
               </div>
-            ) : (
+            ) : (!isMobile ? (
               <div className="blind-panel short-channel">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -756,10 +846,10 @@ function App() {
                 <div className="screw bottom-right" />
                 <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 03</div>
               </div>
-            )}
+            ) : null)}
 
             {/* CH 04: STEMS SEPARATOR */}
-            {showStemsSep ? (
+            {(!isMobile && showStemsSep) || (isMobile && activeMobileModule === 'stems') ? (
               <div className="channel-strip">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -851,7 +941,7 @@ function App() {
                   </button>
                 </form>
               </div>
-            ) : (
+            ) : (!isMobile ? (
               <div className="blind-panel">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -859,12 +949,15 @@ function App() {
                 <div className="screw bottom-right" />
                 <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 04</div>
               </div>
-            )}
-          </div> {/* audio-modules-grid end */}
+            ) : null)}
+          </div>
+          )}
 
-          <div className="pitch-tempo-rack-unit">
-            {/* CH 05: PITCH & TEMPO */}
-            {showPitch ? (
+          {/* 只有在非手機端，或者在手機端且有選中 CH 05 時才渲染此 unit */}
+          {(!isMobile || activeMobileModule === 'pitch') && (
+            <div className="pitch-tempo-rack-unit">
+              {/* CH 05: PITCH & TEMPO */}
+              {(!isMobile && showPitch) || (isMobile && activeMobileModule === 'pitch') ? (
               <div className="channel-strip">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -983,7 +1076,7 @@ function App() {
                   </button>
                 </form>
               </div>
-            ) : (
+            ) : (!isMobile ? (
               <div className="blind-panel">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -991,8 +1084,9 @@ function App() {
                 <div className="screw bottom-right" />
                 <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 05</div>
               </div>
-            )}
-              </div> {/* pitch-tempo-rack-unit end */}
+            ) : null)}
+            </div>
+          )}
             </div> {/* main-rack end */}
 
             {/* Right Column: 狀態監控與廣告面板 */}
