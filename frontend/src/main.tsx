@@ -352,100 +352,112 @@ function App() {
                 </div>
 
                 {/* CH2: YT */}
-                <div className="power-switch-item">
-                  <span className="power-switch-label">{UI_TEXT.powerPanel.ytToggle}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className={`led-indicator green ${showYoutube ? 'on' : ''}`} />
-                    <label className="toggle-lever">
-                      <input
-                        type="checkbox"
-                        checked={showYoutube}
-                        onChange={(e) => setShowYoutube(e.target.checked)}
-                      />
-                      <div className="switch-track">
-                        <div className="switch-lever" />
-                      </div>
-                    </label>
-                  </span>
-                </div>
+                {!isMobile && (
+                  <div className="power-switch-item">
+                    <span className="power-switch-label">{UI_TEXT.powerPanel.ytToggle}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className={`led-indicator green ${showYoutube ? 'on' : ''}`} />
+                      <label className="toggle-lever">
+                        <input
+                          type="checkbox"
+                          checked={showYoutube}
+                          onChange={(e) => setShowYoutube(e.target.checked)}
+                        />
+                        <div className="switch-track">
+                          <div className="switch-lever" />
+                        </div>
+                      </label>
+                    </span>
+                  </div>
+                )}
 
                 {/* CH3: VOCAL */}
-                <div className="power-switch-item">
-                  <span className="power-switch-label">{UI_TEXT.powerPanel.vocalToggle}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className={`led-indicator green ${showVocalSep ? 'on' : ''}`} />
-                    <label className="toggle-lever">
-                      <input
-                        type="checkbox"
-                        checked={showVocalSep}
-                        onChange={(e) => setShowVocalSep(e.target.checked)}
-                      />
-                      <div className="switch-track">
-                        <div className="switch-lever" />
-                      </div>
-                    </label>
-                  </span>
-                </div>
+                {!isMobile && (
+                  <div className="power-switch-item">
+                    <span className="power-switch-label">{UI_TEXT.powerPanel.vocalToggle}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className={`led-indicator green ${showVocalSep ? 'on' : ''}`} />
+                      <label className="toggle-lever">
+                        <input
+                          type="checkbox"
+                          checked={showVocalSep}
+                          onChange={(e) => setShowVocalSep(e.target.checked)}
+                        />
+                        <div className="switch-track">
+                          <div className="switch-lever" />
+                        </div>
+                      </label>
+                    </span>
+                  </div>
+                )}
 
                 {/* CH4: STEMS */}
-                <div className="power-switch-item">
-                  <span className="power-switch-label">{UI_TEXT.powerPanel.stemsToggle}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className={`led-indicator green ${showStemsSep ? 'on' : ''}`} />
-                    <label className="toggle-lever">
-                      <input
-                        type="checkbox"
-                        checked={showStemsSep}
-                        onChange={(e) => setShowStemsSep(e.target.checked)}
-                      />
-                      <div className="switch-track">
-                        <div className="switch-lever" />
-                      </div>
-                    </label>
-                  </span>
-                </div>
+                {!isMobile && (
+                  <div className="power-switch-item">
+                    <span className="power-switch-label">{UI_TEXT.powerPanel.stemsToggle}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className={`led-indicator green ${showStemsSep ? 'on' : ''}`} />
+                      <label className="toggle-lever">
+                        <input
+                          type="checkbox"
+                          checked={showStemsSep}
+                          onChange={(e) => setShowStemsSep(e.target.checked)}
+                        />
+                        <div className="switch-track">
+                          <div className="switch-lever" />
+                        </div>
+                      </label>
+                    </span>
+                  </div>
+                )}
 
                 {/* CH5: PITCH */}
-                <div className="power-switch-item">
-                  <span className="power-switch-label">{UI_TEXT.powerPanel.pitchToggle}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className={`led-indicator green ${showPitch ? 'on' : ''}`} />
-                    <label className="toggle-lever">
-                      <input
-                        type="checkbox"
-                        checked={showPitch}
-                        onChange={(e) => setShowPitch(e.target.checked)}
-                      />
-                      <div className="switch-track">
-                        <div className="switch-lever" />
-                      </div>
-                    </label>
-                  </span>
-                </div>
+                {!isMobile && (
+                  <div className="power-switch-item">
+                    <span className="power-switch-label">{UI_TEXT.powerPanel.pitchToggle}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className={`led-indicator green ${showPitch ? 'on' : ''}`} />
+                      <label className="toggle-lever">
+                        <input
+                          type="checkbox"
+                          checked={showPitch}
+                          onChange={(e) => setShowPitch(e.target.checked)}
+                        />
+                        <div className="switch-track">
+                          <div className="switch-lever" />
+                        </div>
+                      </label>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Dual VU Meters */}
-            <div className="vu-meter-container">
-              <div className="vu-meters-row">
-                <div className="vu-meter">
-                  <div className="vu-meter-scale" />
-                  <div className="vu-needle" style={{ transform: `rotate(${needleL}deg)` }} />
-                  <div className="vu-needle-pivot" />
-                  <div className="vu-label">L</div>
+            {!isMobile && (
+              <div className="vu-meter-container">
+                <div className="vu-meters-row">
+                  <div className="vu-meter">
+                    <div className="vu-meter-scale" />
+                    <div className="vu-needle" style={{ transform: `rotate(${needleL}deg)` }} />
+                    <div className="vu-needle-pivot" />
+                    <div className="vu-label">L</div>
+                  </div>
+                  <div className="vu-meter">
+                    <div className="vu-meter-scale" />
+                    <div className="vu-needle" style={{ transform: `rotate(${needleR}deg)` }} />
+                    <div className="vu-needle-pivot" />
+                    <div className="vu-label">R</div>
+                  </div>
                 </div>
-                <div className="vu-meter">
-                  <div className="vu-meter-scale" />
-                  <div className="vu-needle" style={{ transform: `rotate(${needleR}deg)` }} />
-                  <div className="vu-needle-pivot" />
-                  <div className="vu-label">R</div>
-                </div>
+                <div className="vu-master-label">MASTER</div>
               </div>
-              <div className="vu-master-label">MASTER</div>
-            </div>
+            )}
 
             {/* Weathered Speaker Mesh Grill */}
-            <div className="mesh-grill" />
+            {!isMobile && (
+              <div className="mesh-grill" />
+            )}
           </header>
 
           {/* Main Grid: Interactive Modules */}

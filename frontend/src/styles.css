@@ -1643,28 +1643,60 @@ body {
 
   .console-header {
     margin: -12px -8px 12px -8px; /* 精準防止水平溢出 */
-    padding: 12px 10px;
-    gap: 10px;
+    padding: 10px 12px;
+    display: flex; /* 在手機端改為水平 flex 佈局 */
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 3.5px solid #1a1b1d; /* 變細底邊 */
+  }
+
+  .console-title {
+    flex: 1;
+    text-align: left; /* 靠左排列更美觀 */
+  }
+
+  .console-title h1 {
+    font-size: 1.1rem; /* 標題文字縮小 */
+    line-height: 1.2;
+  }
+
+  .console-title p {
+    font-size: 0.58rem; /* 副標題縮小 */
+    margin: 2px 0 0 0;
+  }
+
+  .console-title .api-node {
+    display: none; /* 手機端隱藏 API 節點資訊節省高度 */
+  }
+
+  .power-panel {
+    background: transparent !important; /* 移除外框背景與邊框 */
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    flex-shrink: 0;
+  }
+
+  .power-panel-title {
+    display: none !important; /* 隱藏行動端標題 */
+  }
+
+  .power-switches-grid {
+    display: block !important; /* 不用 grid */
+  }
+
+  .power-switch-item {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 5px 8px !important;
+    border-radius: 4px;
+    gap: 6px !important;
   }
 
   .mesh-grill {
-    display: none; /* 隱藏純裝飾用的網罩，騰出手機垂直空間 */
-  }
-  
-  /* 縮小雙指針 VU 表大小以防擠壓 */
-  .vu-meter {
-    width: 90px;
-    height: 54px;
-    border-width: 2.5px;
-  }
-  .vu-meters-row {
-    gap: 10px;
-  }
-
-  /* 電源開關在手機直式螢幕下改為雙欄排列 */
-  .power-switches-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px 8px;
+    display: none !important; /* 隱藏網罩 */
   }
 }
 
