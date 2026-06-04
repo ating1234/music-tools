@@ -1582,3 +1582,107 @@ body {
   white-space: nowrap;
   min-width: 0;
 }
+
+/* ==========================================================================
+   手機與平板行動端 RWD 擬真外觀細緻度最佳化 (Safari/iOS Native Compatibility)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  body {
+    padding: 16px 8px; /* 減少 body 邊距 */
+  }
+  
+  .studio-cabinet {
+    border-width: 8px; /* 大幅縮小胡桃木實木外框寬度 */
+    padding: 16px;     /* 減少外框內部與調音面板的 padding */
+    border-radius: 10px;
+  }
+  
+  .studio-cabinet::before {
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border-radius: 10px;
+  }
+
+  .console-panel {
+    padding: 16px 14px 24px 14px; /* 減少金屬面板內部 padding */
+  }
+
+  .console-header {
+    margin: -16px -14px 16px -14px; /* 負 margin 需與 console-panel padding 對齊，防止水平溢出 */
+    padding: 16px 14px 14px 14px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 10px 4px;
+  }
+  
+  .studio-cabinet {
+    border-width: 4px; /* 最窄手機模式，僅保留極細木框質感 */
+    padding: 8px;
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  }
+  
+  .studio-cabinet::before {
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 6px;
+  }
+
+  .console-panel {
+    padding: 12px 8px 18px 8px;
+  }
+
+  .console-header {
+    margin: -12px -8px 12px -8px; /* 精準防止水平溢出 */
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .mesh-grill {
+    display: none; /* 隱藏純裝飾用的網罩，騰出手機垂直空間 */
+  }
+  
+  /* 縮小雙指針 VU 表大小以防擠壓 */
+  .vu-meter {
+    width: 90px;
+    height: 54px;
+    border-width: 2.5px;
+  }
+  .vu-meters-row {
+    gap: 10px;
+  }
+
+  /* 電源開關在手機直式螢幕下改為雙欄排列 */
+  .power-switches-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .power-switches-grid {
+    grid-template-columns: 1fr; /* 最窄畫面改為單欄，避免文字折行重疊 */
+  }
+  
+  /* 細微調整旋鈕控制區與標題字體，確保不會超出邊界 */
+  .knob-dial-wrapper {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .console-title h1 {
+    font-size: 1.3rem;
+  }
+  .console-title p {
+    font-size: 0.65rem;
+  }
+}
