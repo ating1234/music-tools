@@ -1643,7 +1643,7 @@ body {
 
   .console-header {
     margin: -12px -8px 12px -8px; /* 精準防止水平溢出 */
-    padding: 10px 12px;
+    padding: 10px 12px 10px 28px; /* 左側 padding 設為 28px，避開左上角的螺絲 */
     display: flex; /* 在手機端改為水平 flex 佈局 */
     flex-direction: row;
     justify-content: space-between;
@@ -1658,13 +1658,16 @@ body {
   }
 
   .console-title h1 {
-    font-size: 1.1rem; /* 標題文字縮小 */
-    line-height: 1.2;
+    font-size: 1.35rem; /* 字體稍微調大 */
+    line-height: 1.15;
+    white-space: normal; /* 容許自然折行 */
   }
 
   .console-title p {
-    font-size: 0.58rem; /* 副標題縮小 */
+    font-size: 0.48rem; /* 再縮小副標題 */
     margin: 2px 0 0 0;
+    opacity: 0.7; /* 稍微變淡，看起來更精緻 */
+    letter-spacing: 0.05em;
   }
 
   .console-title .api-node {
@@ -1711,12 +1714,6 @@ body {
     height: 50px;
   }
   
-  .console-title h1 {
-    font-size: 1.3rem;
-  }
-  .console-title p {
-    font-size: 0.65rem;
-  }
 }
 
 /* ==========================================================================
