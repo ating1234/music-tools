@@ -87,6 +87,7 @@ function App() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [job, setJob] = useState<Job | null>(null);
   const [busy, setBusy] = useState(false);
+  const [downloadingFile, setDownloadingFile] = useState(false);
   const lcdRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<Job[]>([]);
@@ -208,6 +209,31 @@ function App() {
       setError(err instanceof Error ? err.message : '建立任務失敗');
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleFileDownload(e: React.MouseEvent<HTMLAnchorElement>, url: string, defaultName: string) {
+    e.preventDefault();
+    setDownloadingFile(true);
+    setError(null);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("下載失敗，伺服器無回應");
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = defaultName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Blob 下載失敗，嘗試回退:", err);
+      // 回退：在新視窗直接打開，由瀏覽器原生開啟
+      window.open(url, '_blank');
+    } finally {
+      setDownloadingFile(false);
     }
   }
 
@@ -1171,9 +1197,14 @@ function App() {
 
                 {/* Tape Eject style download button */}
                 {currentDownloadUrl && (
-                  <div style={{ marginTop: '10px', display: 'flex' }}>
-                    <a className="cassette-eject" href={currentDownloadUrl} download>
-                      {downloadLabel}
+                  <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                    <a 
+                      className="cassette-eject" 
+                      href={currentDownloadUrl}
+                      onClick={(e) => handleFileDownload(e, currentDownloadUrl, job?.output_name || 'download.mp3')}
+                      style={{ pointerEvents: downloadingFile ? 'none' : 'auto', opacity: downloadingFile ? 0.6 : 1 }}
+                    >
+                      {downloadingFile ? "📥 下載準備中..." : downloadLabel}
                     </a>
                   </div>
                 )}
