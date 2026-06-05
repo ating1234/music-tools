@@ -8,11 +8,10 @@ logger = logging.getLogger(__name__)
 
 # 使用 2026年最新且經 cobalt.directory 驗證對 YouTube 支援 Working 且不需 JWT 驗證的社群節點作為備用
 COBALT_NODES = [
-    "https://cobalt.omega.wolfy.love/",
-    "https://cobaltapi.kittycat.boo/",
-    "https://subito-c.meowing.de/",
-    "https://dog.kittycat.boo/",
-    "https://api.qwkuns.me/",
+    "https://api.cobalt.blackcat.sweeux.org/",
+    "https://api.cobalt.liubquanti.click/",
+    "https://cobaltapi.cjs.nz/",
+    "https://fox.kittycat.boo/",
 ]
 
 def download_youtube_mp3(url: str, target_dir: Path) -> Path:
