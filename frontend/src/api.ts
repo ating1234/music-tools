@@ -97,7 +97,22 @@ export async function uploadWav(file: File): Promise<Job> {
   activeJobs.set(jobId, job);
 
   void (async () => {
+    let progressTimer: any = null;
     try {
+      // 任務一建立，立刻進入處理狀態
+      job.status = 'processing';
+      job.step = 'converting';
+      job.progress = 5;
+      activeJobs.set(jobId, { ...job });
+
+      // 虛擬進度定時器，每 1.2 秒遞增 1%~4%，最高到 90%
+      progressTimer = setInterval(() => {
+        if (job.status === 'processing' && job.progress < 90) {
+          job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+          activeJobs.set(jobId, { ...job });
+        }
+      }, 1200);
+
       const app = await getClient();
       const submission = app.submit("/transform", [file, 0, 120]);
       let lastData: any = null;
@@ -106,22 +121,39 @@ export async function uploadWav(file: File): Promise<Job> {
         if (msg.type === "status") {
           const evt = msg as any;
           if (evt.stage === 'pending') {
+            if (progressTimer) {
+              clearInterval(progressTimer);
+              progressTimer = null;
+            }
             job.status = 'queued';
             job.step = 'queued';
             job.queue_position = evt.queue_position;
           } else if (evt.stage === 'complete') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
           } else if (evt.stage === 'error') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'failed';
             job.step = 'failed';
             job.error = evt.message || '音訊轉檔失敗';
           } else {
             job.status = 'processing';
             job.step = 'converting';
+            if (!progressTimer && job.progress < 90) {
+              progressTimer = setInterval(() => {
+                if (job.status === 'processing' && job.progress < 90) {
+                  job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+                  activeJobs.set(jobId, { ...job });
+                }
+              }, 1200);
+            }
             if (evt.progress_data && evt.progress_data[0]) {
-              job.progress = Math.round(evt.progress_data[0].progress * 100);
+              const realProgress = Math.round(evt.progress_data[0].progress * 100);
+              if (realProgress > job.progress) {
+                job.progress = realProgress;
+              }
             }
           }
           activeJobs.set(jobId, { ...job });
@@ -129,6 +161,8 @@ export async function uploadWav(file: File): Promise<Job> {
           lastData = msg.data;
         }
       }
+
+      if (progressTimer) clearInterval(progressTimer);
 
       if (!lastData) {
         throw new Error("沒有接收到返回的音訊資料");
@@ -143,6 +177,7 @@ export async function uploadWav(file: File): Promise<Job> {
       job.download_url = fileObj.url;
       activeJobs.set(jobId, { ...job });
     } catch (err) {
+      if (progressTimer) clearInterval(progressTimer);
       job.status = 'failed';
       job.error = err instanceof Error ? err.message : String(err);
       activeJobs.set(jobId, { ...job });
@@ -196,7 +231,22 @@ export async function transformAudio(fileId: string, semitones: number, targetBp
   activeJobs.set(jobId, job);
 
   void (async () => {
+    let progressTimer: any = null;
     try {
+      // 任務一建立，立刻進入處理狀態
+      job.status = 'processing';
+      job.step = 'processing';
+      job.progress = 5;
+      activeJobs.set(jobId, { ...job });
+
+      // 虛擬進度定時器，每 1.2 秒遞增 1%~4%，最高到 90%
+      progressTimer = setInterval(() => {
+        if (job.status === 'processing' && job.progress < 90) {
+          job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+          activeJobs.set(jobId, { ...job });
+        }
+      }, 1200);
+
       const app = await getClient();
       const submission = app.submit("/transform", [file, semitones, targetBpm]);
       let lastData: any = null;
@@ -205,22 +255,39 @@ export async function transformAudio(fileId: string, semitones: number, targetBp
         if (msg.type === "status") {
           const evt = msg as any;
           if (evt.stage === 'pending') {
+            if (progressTimer) {
+              clearInterval(progressTimer);
+              progressTimer = null;
+            }
             job.status = 'queued';
             job.step = 'queued';
             job.queue_position = evt.queue_position;
           } else if (evt.stage === 'complete') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
           } else if (evt.stage === 'error') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'failed';
             job.step = 'failed';
             job.error = evt.message || '變速變調失敗';
           } else {
             job.status = 'processing';
             job.step = 'processing';
+            if (!progressTimer && job.progress < 90) {
+              progressTimer = setInterval(() => {
+                if (job.status === 'processing' && job.progress < 90) {
+                  job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+                  activeJobs.set(jobId, { ...job });
+                }
+              }, 1200);
+            }
             if (evt.progress_data && evt.progress_data[0]) {
-              job.progress = Math.round(evt.progress_data[0].progress * 100);
+              const realProgress = Math.round(evt.progress_data[0].progress * 100);
+              if (realProgress > job.progress) {
+                job.progress = realProgress;
+              }
             }
           }
           activeJobs.set(jobId, { ...job });
@@ -228,6 +295,8 @@ export async function transformAudio(fileId: string, semitones: number, targetBp
           lastData = msg.data;
         }
       }
+
+      if (progressTimer) clearInterval(progressTimer);
 
       if (!lastData) {
         throw new Error("沒有接收到變速變調的音訊資料");
@@ -242,6 +311,7 @@ export async function transformAudio(fileId: string, semitones: number, targetBp
       job.download_url = fileObj.url;
       activeJobs.set(jobId, { ...job });
     } catch (err) {
+      if (progressTimer) clearInterval(progressTimer);
       job.status = 'failed';
       job.error = err instanceof Error ? err.message : String(err);
       activeJobs.set(jobId, { ...job });
@@ -267,7 +337,22 @@ export async function separateVocals(file: File): Promise<Job> {
   activeJobs.set(jobId, job);
 
   void (async () => {
+    let progressTimer: any = null;
     try {
+      // 任務一建立，立刻進入處理狀態
+      job.status = 'processing';
+      job.step = 'separating';
+      job.progress = 5;
+      activeJobs.set(jobId, { ...job });
+
+      // 虛擬進度定時器，每 1.2 秒遞增 1%~4%，最高到 90%
+      progressTimer = setInterval(() => {
+        if (job.status === 'processing' && job.progress < 90) {
+          job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+          activeJobs.set(jobId, { ...job });
+        }
+      }, 1200);
+
       const app = await getClient();
       const submission = app.submit("/separate_vocals", [file]);
       let lastData: any = null;
@@ -276,22 +361,39 @@ export async function separateVocals(file: File): Promise<Job> {
         if (msg.type === "status") {
           const evt = msg as any;
           if (evt.stage === 'pending') {
+            if (progressTimer) {
+              clearInterval(progressTimer);
+              progressTimer = null;
+            }
             job.status = 'queued';
             job.step = 'queued';
             job.queue_position = evt.queue_position;
           } else if (evt.stage === 'complete') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
           } else if (evt.stage === 'error') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'failed';
             job.step = 'failed';
             job.error = evt.message || '人聲分離失敗';
           } else {
             job.status = 'processing';
             job.step = 'separating';
+            if (!progressTimer && job.progress < 90) {
+              progressTimer = setInterval(() => {
+                if (job.status === 'processing' && job.progress < 90) {
+                  job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+                  activeJobs.set(jobId, { ...job });
+                }
+              }, 1200);
+            }
             if (evt.progress_data && evt.progress_data[0]) {
-              job.progress = Math.round(evt.progress_data[0].progress * 100);
+              const realProgress = Math.round(evt.progress_data[0].progress * 100);
+              if (realProgress > job.progress) {
+                job.progress = realProgress;
+              }
             }
           }
           activeJobs.set(jobId, { ...job });
@@ -299,6 +401,8 @@ export async function separateVocals(file: File): Promise<Job> {
           lastData = msg.data;
         }
       }
+
+      if (progressTimer) clearInterval(progressTimer);
 
       if (!lastData) {
         throw new Error("沒有接收到人聲分離的壓縮資料");
@@ -313,6 +417,7 @@ export async function separateVocals(file: File): Promise<Job> {
       job.download_url = fileObj.url;
       activeJobs.set(jobId, { ...job });
     } catch (err) {
+      if (progressTimer) clearInterval(progressTimer);
       job.status = 'failed';
       job.error = err instanceof Error ? err.message : String(err);
       activeJobs.set(jobId, { ...job });
@@ -338,7 +443,22 @@ export async function separateInstruments(file: File, stems: string[], quality: 
   activeJobs.set(jobId, job);
 
   void (async () => {
+    let progressTimer: any = null;
     try {
+      // 任務一建立，立刻進入處理狀態
+      job.status = 'processing';
+      job.step = 'separating';
+      job.progress = 5;
+      activeJobs.set(jobId, { ...job });
+
+      // 虛擬進度定時器，每 1.2 秒遞增 1%~4%，最高到 90%
+      progressTimer = setInterval(() => {
+        if (job.status === 'processing' && job.progress < 90) {
+          job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+          activeJobs.set(jobId, { ...job });
+        }
+      }, 1200);
+
       const app = await getClient();
       const submission = app.submit("/separate_instruments", [file, stems, quality]);
       let lastData: any = null;
@@ -347,22 +467,39 @@ export async function separateInstruments(file: File, stems: string[], quality: 
         if (msg.type === "status") {
           const evt = msg as any;
           if (evt.stage === 'pending') {
+            if (progressTimer) {
+              clearInterval(progressTimer);
+              progressTimer = null;
+            }
             job.status = 'queued';
             job.step = 'queued';
             job.queue_position = evt.queue_position;
           } else if (evt.stage === 'complete') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
           } else if (evt.stage === 'error') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'failed';
             job.step = 'failed';
             job.error = evt.message || '樂器分離失敗';
           } else {
             job.status = 'processing';
             job.step = 'separating';
+            if (!progressTimer && job.progress < 90) {
+              progressTimer = setInterval(() => {
+                if (job.status === 'processing' && job.progress < 90) {
+                  job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+                  activeJobs.set(jobId, { ...job });
+                }
+              }, 1200);
+            }
             if (evt.progress_data && evt.progress_data[0]) {
-              job.progress = Math.round(evt.progress_data[0].progress * 100);
+              const realProgress = Math.round(evt.progress_data[0].progress * 100);
+              if (realProgress > job.progress) {
+                job.progress = realProgress;
+              }
             }
           }
           activeJobs.set(jobId, { ...job });
@@ -370,6 +507,8 @@ export async function separateInstruments(file: File, stems: string[], quality: 
           lastData = msg.data;
         }
       }
+
+      if (progressTimer) clearInterval(progressTimer);
 
       if (!lastData) {
         throw new Error("沒有接收到樂器分離的壓縮資料");
@@ -384,6 +523,7 @@ export async function separateInstruments(file: File, stems: string[], quality: 
       job.download_url = fileObj.url;
       activeJobs.set(jobId, { ...job });
     } catch (err) {
+      if (progressTimer) clearInterval(progressTimer);
       job.status = 'failed';
       job.error = err instanceof Error ? err.message : String(err);
       activeJobs.set(jobId, { ...job });
@@ -409,7 +549,22 @@ export async function createYoutubeJob(url: string): Promise<Job> {
   activeJobs.set(jobId, job);
 
   void (async () => {
+    let progressTimer: any = null;
     try {
+      // 任務一建立，立刻進入處理狀態
+      job.status = 'processing';
+      job.step = 'downloading';
+      job.progress = 5;
+      activeJobs.set(jobId, { ...job });
+
+      // 虛擬進度定時器，每 1.2 秒遞增 1%~4%，最高到 90%
+      progressTimer = setInterval(() => {
+        if (job.status === 'processing' && job.progress < 90) {
+          job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+          activeJobs.set(jobId, { ...job });
+        }
+      }, 1200);
+
       const app = await getClient();
       const submission = app.submit("/youtube", [url]);
       let lastData: any = null;
@@ -418,22 +573,39 @@ export async function createYoutubeJob(url: string): Promise<Job> {
         if (msg.type === "status") {
           const evt = msg as any;
           if (evt.stage === 'pending') {
+            if (progressTimer) {
+              clearInterval(progressTimer);
+              progressTimer = null;
+            }
             job.status = 'queued';
             job.step = 'queued';
             job.queue_position = evt.queue_position;
           } else if (evt.stage === 'complete') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'finished';
             job.step = 'finished';
             job.progress = 100;
           } else if (evt.stage === 'error') {
+            if (progressTimer) clearInterval(progressTimer);
             job.status = 'failed';
             job.step = 'failed';
             job.error = evt.message || 'YouTube下載失敗';
           } else {
             job.status = 'processing';
             job.step = 'downloading';
+            if (!progressTimer && job.progress < 90) {
+              progressTimer = setInterval(() => {
+                if (job.status === 'processing' && job.progress < 90) {
+                  job.progress = Math.min(90, job.progress + Math.floor(Math.random() * 4) + 1);
+                  activeJobs.set(jobId, { ...job });
+                }
+              }, 1200);
+            }
             if (evt.progress_data && evt.progress_data[0]) {
-              job.progress = Math.round(evt.progress_data[0].progress * 100);
+              const realProgress = Math.round(evt.progress_data[0].progress * 100);
+              if (realProgress > job.progress) {
+                job.progress = realProgress;
+              }
             }
           }
           activeJobs.set(jobId, { ...job });
@@ -441,6 +613,8 @@ export async function createYoutubeJob(url: string): Promise<Job> {
           lastData = msg.data;
         }
       }
+
+      if (progressTimer) clearInterval(progressTimer);
 
       if (!lastData) {
         throw new Error("沒有接收到 YouTube 下載的音訊資料");
@@ -455,6 +629,7 @@ export async function createYoutubeJob(url: string): Promise<Job> {
       job.download_url = fileObj.url;
       activeJobs.set(jobId, { ...job });
     } catch (err) {
+      if (progressTimer) clearInterval(progressTimer);
       job.status = 'failed';
       job.error = err instanceof Error ? err.message : String(err);
       activeJobs.set(jobId, { ...job });
