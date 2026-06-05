@@ -92,7 +92,7 @@ function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("提示！");
   const [modalMessage, setModalMessage] = useState("");
-  const [onModalConfirm, setOnModalConfirm] = useState<(() => void) | null>(null);
+  const modalConfirmRef = useRef<(() => void) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<Job[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -229,7 +229,10 @@ function App() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
+      // 延遲 60 秒釋放 Blob URL，以防 iOS Safari 點選原生下載提示時 URL 已經被註銷而失效
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+      }, 60000);
     } catch (err) {
       console.error("Blob 下載失敗，嘗試回退:", err);
       // 回退：在新視窗直接打開，由瀏覽器原生開啟
@@ -242,7 +245,7 @@ function App() {
   function showWarningModal(message: string, onConfirm: () => void) {
     setModalTitle("提示！");
     setModalMessage(message);
-    setOnModalConfirm(() => onConfirm);
+    modalConfirmRef.current = onConfirm;
     setModalOpen(true);
   }
 
@@ -1336,8 +1339,8 @@ function App() {
                 className="console-btn btn-accent" 
                 onClick={() => {
                   setModalOpen(false);
-                  if (onModalConfirm) {
-                    onModalConfirm();
+                  if (modalConfirmRef.current) {
+                    modalConfirmRef.current();
                   }
                 }}
               >
