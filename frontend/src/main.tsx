@@ -216,30 +216,20 @@ function App() {
 
   async function handleFileDownload(e: React.MouseEvent<HTMLAnchorElement>, url: string, defaultName: string) {
     e.preventDefault();
+    // 後端下載 API 已經包含 Content-Disposition: attachment 標頭，
+    // 直接以 window.location.href 觸發，能讓 iOS/Android 原生下載機制無縫運作，
+    // 同時避免了 Fetch 跨域與手機端 Blob 記憶體不足崩潰的問題！
     setDownloadingFile(true);
-    setError(null);
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("下載失敗，伺服器無回應");
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = defaultName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      // 延遲 60 秒釋放 Blob URL，以防 iOS Safari 點選原生下載提示時 URL 已經被註銷而失效
-      setTimeout(() => {
-        window.URL.revokeObjectURL(blobUrl);
-      }, 60000);
+      window.location.href = url;
     } catch (err) {
-      console.error("Blob 下載失敗，嘗試回退:", err);
-      // 回退：在新視窗直接打開，由瀏覽器原生開啟
+      console.error("導向下載失敗，嘗試新分頁開啟:", err);
       window.open(url, '_blank');
-    } finally {
-      setDownloadingFile(false);
     }
+    // 1.5 秒後恢復按鈕狀態，提供良好的點擊回饋
+    setTimeout(() => {
+      setDownloadingFile(false);
+    }, 1500);
   }
 
   function showWarningModal(message: string, onConfirm: () => void) {
