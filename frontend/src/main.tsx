@@ -176,24 +176,34 @@ function App() {
     if (job?.id === jobId) setJob(null);
   }
 
-  // VU Meter needle jittering when busy or analyzing
+  // VU Meter needle jittering when busy, analyzing, or processing a job
   useEffect(() => {
-    if (!busy && !analyzing) {
+    const isProcessing = job && job.status === 'processing';
+    
+    if (!busy && !analyzing && !isProcessing) {
       setNeedleL(-35);
       setNeedleR(-35);
       return;
     }
-
+ 
     const interval = window.setInterval(() => {
-      // Jitter needle angles between -20 and +20 degrees
-      const jitterL = Math.floor(Math.random() * 41) - 20;
-      const jitterR = Math.floor(Math.random() * 41) - 20;
-      setNeedleL(jitterL);
-      setNeedleR(jitterR);
+      if (isProcessing) {
+        // 轉檔進行中：指針大力偏右邊抖動 (在 +10 ~ +38 度之間晃動，模擬滿格甚至微爆音的動態處理)
+        const jitterL = Math.floor(Math.random() * 28) + 10;
+        const jitterR = Math.floor(Math.random() * 28) + 10;
+        setNeedleL(jitterL);
+        setNeedleR(jitterR);
+      } else {
+        // 建立任務或分析中：在中段偏左溫和抖動 (在 -20 ~ +10 度之間)
+        const jitterL = Math.floor(Math.random() * 31) - 20;
+        const jitterR = Math.floor(Math.random() * 31) - 20;
+        setNeedleL(jitterL);
+        setNeedleR(jitterR);
+      }
     }, 80);
-
+ 
     return () => window.clearInterval(interval);
-  }, [busy, analyzing]);
+  }, [busy, analyzing, job]);
 
   async function runAction(action: () => Promise<Job>) {
     showWarningModal("採用網路上的免費資源，所以轉檔速度慢，請耐心等待！", async () => {
