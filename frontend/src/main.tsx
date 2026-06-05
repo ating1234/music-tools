@@ -1172,7 +1172,7 @@ function App() {
                 {/* Tape Eject style download button */}
                 {currentDownloadUrl && (
                   <div style={{ marginTop: '10px', display: 'flex' }}>
-                    <a className="cassette-eject" href={currentDownloadUrl}>
+                    <a className="cassette-eject" href={currentDownloadUrl} download>
                       {downloadLabel}
                     </a>
                   </div>
