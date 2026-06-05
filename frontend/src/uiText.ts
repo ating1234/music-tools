@@ -37,7 +37,7 @@ export const UI_TEXT = {
   },
   stemsSeparator: {
     title: "STEMS SEPARATOR",
-    desc: "分離人聲、鼓、貝斯、吉他與鋼琴。",
+    desc: "分離人聲、鼓、貝斯、吉他與鋼琴。薩克斯風或其他樂器可以勾選「其他」試試看！",
     qualityLabel: "分離品質",
     selectAll: "全選",
     clearAll: "清除",

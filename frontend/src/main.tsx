@@ -191,7 +191,7 @@ function App() {
   }, [busy, analyzing]);
 
   async function runAction(action: () => Promise<Job>) {
-    alert("採用網路上的免費資源，所以轉檔速度慢，請耐心等待！");
+    alert("提示！\n\n採用網路上的免費資源，所以轉檔速度慢，請耐心等待！");
     
     // 捲動到 MONITOR / LCD STATUS PANEL
     setTimeout(() => {
