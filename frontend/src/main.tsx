@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   API_BASE,
@@ -87,6 +87,7 @@ function App() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [job, setJob] = useState<Job | null>(null);
   const [busy, setBusy] = useState(false);
+  const lcdRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<Job[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -190,6 +191,15 @@ function App() {
   }, [busy, analyzing]);
 
   async function runAction(action: () => Promise<Job>) {
+    alert("採用網路上的免費資源，所以轉檔速度慢，請耐心等待！");
+    
+    // 捲動到 MONITOR / LCD STATUS PANEL
+    setTimeout(() => {
+      if (lcdRef.current) {
+        lcdRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+
     setBusy(true);
     setError(null);
     try {
@@ -312,6 +322,7 @@ function App() {
   };
 
   const jobRunning = job !== null && job.status !== 'finished' && job.status !== 'failed';
+  const isBusyProcessing = jobRunning || analyzing || busy;
 
   return (
     <div className="studio-cabinet">
@@ -620,7 +631,7 @@ function App() {
                       onChange={(event) => setFile(event.target.files?.[0] ?? null)}
                     />
                   </label>
-                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy || jobRunning}>
+                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={isBusyProcessing}>
                     {busy ? UI_TEXT.wavConverter.buttonBusy : UI_TEXT.wavConverter.buttonStart}
                   </button>
                 </form>
@@ -734,7 +745,7 @@ function App() {
                       onChange={(event) => setYoutubeUrl(event.target.value)}
                     />
                   </div>
-                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy || jobRunning}>
+                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={isBusyProcessing}>
                     {busy ? UI_TEXT.ytExtractor.buttonBusy : UI_TEXT.ytExtractor.buttonStart}
                   </button>
                 </form>
@@ -850,7 +861,7 @@ function App() {
                       onChange={(event) => setVocalFile(event.target.files?.[0] ?? null)}
                     />
                   </label>
-                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy || jobRunning}>
+                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={isBusyProcessing}>
                     {busy ? UI_TEXT.vocalSeparator.buttonBusy : UI_TEXT.vocalSeparator.buttonStart}
                   </button>
                 </form>
@@ -953,7 +964,7 @@ function App() {
                       onChange={(event) => setInstrumentFile(event.target.files?.[0] ?? null)}
                     />
                   </label>
-                  <button type="submit" className="console-btn btn-wide" disabled={busy || jobRunning}>
+                  <button type="submit" className="console-btn btn-wide" disabled={isBusyProcessing}>
                     {busy ? UI_TEXT.stemsSeparator.buttonBusy : UI_TEXT.stemsSeparator.buttonStart}
                   </button>
                 </form>
@@ -1015,7 +1026,7 @@ function App() {
                     />
                   </label>
                   
-                  <button type="button" className="console-btn btn-accent btn-wide" disabled={analyzing || !transformFile || jobRunning} onClick={() => void runAnalyze()}>
+                  <button type="button" className="console-btn btn-accent btn-wide" disabled={isBusyProcessing || !transformFile} onClick={() => void runAnalyze()}>
                     {analyzing ? UI_TEXT.pitch.buttonAnalyzing : UI_TEXT.pitch.buttonAnalyze}
                   </button>
                   
@@ -1088,7 +1099,7 @@ function App() {
                     />
                   </div>
                   
-                  <button type="submit" className="console-btn btn-wide" disabled={busy || !analysis || jobRunning}>
+                  <button type="submit" className="console-btn btn-wide" disabled={isBusyProcessing || !analysis}>
                     {busy ? UI_TEXT.wavConverter.buttonBusy : UI_TEXT.pitch.buttonStart}
                   </button>
                 </form>
@@ -1109,12 +1120,12 @@ function App() {
             {/* Right Column: 狀態監控與廣告面板 */}
             <div className="sidebar-rack">
               {/* LCD DISPLAY STATUS */}
-              <div className={`lcd-container ${jobRunning ? 'processing' : ''}`}>
+              <div ref={lcdRef} className={`lcd-container ${jobRunning ? 'processing' : ''}`}>
                 <div className="screw top-left" />
                 <div className="screw top-right" />
                 <div className="screw bottom-left" />
                 <div className="screw bottom-right" />
-                <div className="lcd-display">
+                <div className="lcd-display monitor-lcd">
                   <div className="lcd-header">{UI_TEXT.status.title}</div>
                   
                   {!job || job.status === 'finished' ? (
@@ -1166,53 +1177,6 @@ function App() {
                     </a>
                   </div>
                 )}
-              </div>
-
-              {/* JOB HISTORY PANEL */}
-              <div className="lcd-container">
-                <div className="screw top-left" />
-                <div className="screw top-right" />
-                <div className="screw bottom-left" />
-                <div className="screw bottom-right" />
-                <div className="lcd-display">
-                  <div className="lcd-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>TASK HISTORY / JOB LOG</span>
-                    <button
-                      className="cassette-eject"
-                      style={{ padding: '2px 10px', fontSize: '10px' }}
-                      onClick={() => setHistoryOpen(o => !o)}
-                    >
-                      {historyOpen ? '▲ HIDE' : '▼ SHOW'}
-                    </button>
-                  </div>
-                  {historyOpen && (
-                    history.length === 0
-                      ? <div className="lcd-text" style={{ marginTop: '6px' }}>NO RECORDS FOUND</div>
-                      : <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          {history.map(j => (
-                            <div key={j.id} className="lcd-text history-row">
-                              <span className="history-kind">{(j.kind ?? 'JOB').toUpperCase().replace(/_/g, ' ')}</span>
-                              <span className={`history-status ${j.status}`}>{j.status.toUpperCase()}</span>
-                              {j.output_name && <span className="history-file">{j.output_name}</span>}
-                              <span style={{ marginLeft: 'auto', display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
-                                {j.download_url && (
-                                  <a className="cassette-eject" style={{ padding: '1px 8px', fontSize: '9px' }} href={`${API_BASE}${j.download_url}`}>
-                                    DL
-                                  </a>
-                                )}
-                                <button
-                                  className="cassette-eject"
-                                  style={{ padding: '1px 8px', fontSize: '9px', background: 'rgba(255,59,48,0.15)', borderColor: 'rgba(255,59,48,0.4)', color: '#ff3b30' }}
-                                  onClick={() => void handleDeleteJob(j.id)}
-                                >
-                                  DEL
-                                </button>
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                  )}
-                </div>
               </div>
 
               {/* AD-MODULE 1: VU METER GOOGLE AD SLOT */}

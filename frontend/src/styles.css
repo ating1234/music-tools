@@ -546,6 +546,12 @@ body {
   position: relative;
 }
 
+.lcd-display.monitor-lcd {
+  min-height: 240px;
+  justify-content: flex-start;
+}
+
+
 .lcd-header {
   font-size: 0.65rem;
   color: var(--color-amber-dim);
