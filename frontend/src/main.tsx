@@ -89,6 +89,10 @@ function App() {
   const [busy, setBusy] = useState(false);
   const [downloadingFile, setDownloadingFile] = useState(false);
   const lcdRef = useRef<HTMLDivElement>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("提示！");
+  const [modalMessage, setModalMessage] = useState("");
+  const [onModalConfirm, setOnModalConfirm] = useState<(() => void) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<Job[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -192,24 +196,22 @@ function App() {
   }, [busy, analyzing]);
 
   async function runAction(action: () => Promise<Job>) {
-    alert("提示！\n\n採用網路上的免費資源，所以轉檔速度慢，請耐心等待！");
-    
-    // 捲動到 MONITOR / LCD STATUS PANEL
-    setTimeout(() => {
+    showWarningModal("採用網路上的免費資源，所以轉檔速度慢，請耐心等待！", async () => {
+      // 捲動到 MONITOR / LCD STATUS PANEL
       if (lcdRef.current) {
         lcdRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-    }, 100);
-
-    setBusy(true);
-    setError(null);
-    try {
-      setJob(await action());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '建立任務失敗');
-    } finally {
-      setBusy(false);
-    }
+      
+      setBusy(true);
+      setError(null);
+      try {
+        setJob(await action());
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '建立任務失敗');
+      } finally {
+        setBusy(false);
+      }
+    });
   }
 
   async function handleFileDownload(e: React.MouseEvent<HTMLAnchorElement>, url: string, defaultName: string) {
@@ -235,6 +237,13 @@ function App() {
     } finally {
       setDownloadingFile(false);
     }
+  }
+
+  function showWarningModal(message: string, onConfirm: () => void) {
+    setModalTitle("提示！");
+    setModalMessage(message);
+    setOnModalConfirm(() => onConfirm);
+    setModalOpen(true);
   }
 
   const currentDownloadUrl = job ? downloadUrl(job) : null;
@@ -1306,6 +1315,38 @@ function App() {
           </div>
         </div>
       </main>
+      
+      {modalOpen && (
+        <div className="console-modal-overlay">
+          <div className="console-modal-box">
+            <div className="screw top-left" />
+            <div className="screw top-right" />
+            <div className="screw bottom-left" />
+            <div className="screw bottom-right" />
+            <div className="console-modal-header">
+              <span className="modal-title-led" />
+              <h3>{modalTitle}</h3>
+            </div>
+            <div className="console-modal-body">
+              <p style={{ margin: 0 }}>{modalMessage}</p>
+            </div>
+            <div className="console-modal-footer">
+              <button 
+                type="button" 
+                className="console-btn btn-accent" 
+                onClick={() => {
+                  setModalOpen(false);
+                  if (onModalConfirm) {
+                    onModalConfirm();
+                  }
+                }}
+              >
+                [ ACKNOWLEDGE / 確定 ]
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
