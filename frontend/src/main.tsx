@@ -1319,6 +1319,18 @@ function App() {
         </div>
       </main>
       
+      <footer className="studio-footer">
+        <div className="studio-footer-content">
+          <span className="studio-footer-text">
+            系統破防了？👉 <a href="https://github.com/ating1234/music-tools/issues/new?labels=bug&title=Bug+Report" target="_blank" rel="noopener noreferrer" className="studio-footer-link link-bug">回報 Bug</a>
+          </span>
+          <span className="studio-footer-divider">｜</span>
+          <span className="studio-footer-text">
+            腦袋有新梗？👉 <a href="https://github.com/ating1234/music-tools/issues/new?labels=enhancement&title=Feature+Request" target="_blank" rel="noopener noreferrer" className="studio-footer-link link-wish">許願測驗主題</a>
+          </span>
+        </div>
+      </footer>
+      
       {modalOpen && (
         <div className="console-modal-overlay">
           <div className="console-modal-box">

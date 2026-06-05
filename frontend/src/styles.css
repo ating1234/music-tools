@@ -1980,3 +1980,91 @@ body {
   from { opacity: 0.4; box-shadow: 0 0 2px #f59e0b; }
   to { opacity: 1; box-shadow: 0 0 10px #f59e0b; }
 }
+
+/* Studio Footer 機櫃風底部資訊 */
+.studio-footer {
+  width: 100%;
+  padding: 24px 16px;
+  margin-top: 40px;
+  background-color: #121316;
+  border-top: 2px solid #282a30;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.studio-footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: var(--font-studio), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  color: #8f929a;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.studio-footer-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.studio-footer-divider {
+  color: #2d2f35;
+  font-weight: bold;
+}
+
+.studio-footer-link {
+  text-decoration: none;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #25272c;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 回報 Bug - 橘紅色調（符合錯誤警示） */
+.studio-footer-link.link-bug {
+  color: #ff8b80;
+}
+.studio-footer-link.link-bug:hover {
+  color: #ff4d3d;
+  background: rgba(255, 59, 48, 0.1);
+  border-color: #ff3b30;
+  box-shadow: 0 0 12px rgba(255, 59, 48, 0.35);
+  text-shadow: 0 0 8px rgba(255, 59, 48, 0.6);
+}
+
+/* 許願主題 - 琥珀色調（符合機櫃發光） */
+.studio-footer-link.link-wish {
+  color: var(--color-amber-glow);
+}
+.studio-footer-link.link-wish:hover {
+  color: #ffb84d;
+  background: rgba(255, 162, 23, 0.1);
+  border-color: var(--color-amber-glow);
+  box-shadow: 0 0 12px rgba(255, 162, 23, 0.35);
+  text-shadow: 0 0 8px rgba(255, 162, 23, 0.6);
+}
+
+@media (max-width: 640px) {
+  .studio-footer {
+    padding: 20px 12px;
+    margin-top: 30px;
+  }
+  .studio-footer-content {
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.78rem;
+  }
+  .studio-footer-divider {
+    display: none;
+  }
+}
