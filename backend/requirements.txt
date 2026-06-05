@@ -19,6 +19,8 @@ einops
 julius
 lameenc
 openunmix
+yt-dlp
+
 
 
 

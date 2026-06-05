@@ -8,10 +8,12 @@ logger = logging.getLogger(__name__)
 
 # 使用 2026年最新且經 cobalt.directory 驗證對 YouTube 支援 Working 且不需 JWT 驗證的社群節點作為備用
 COBALT_NODES = [
+    "https://fox.kittycat.boo/",
+    "https://dog.kittycat.boo/",
+    "https://cobaltapi.kittycat.boo/",
     "https://api.cobalt.blackcat.sweeux.org/",
     "https://api.cobalt.liubquanti.click/",
     "https://cobaltapi.cjs.nz/",
-    "https://fox.kittycat.boo/",
 ]
 
 def download_youtube_mp3(url: str, target_dir: Path) -> Path:
@@ -19,21 +21,34 @@ def download_youtube_mp3(url: str, target_dir: Path) -> Path:
     output_path = target_dir / "youtube.mp3"
 
     # 1. 優先嘗試使用本機的 yt-dlp 進行下載與音訊轉換
-    yt_dlp_path = shutil.which("yt-dlp")
-    if not yt_dlp_path:
-        # 尋找 macOS 常見的 Homebrew 或其他路徑
-        for path in ["/opt/homebrew/bin/yt-dlp", "/usr/local/bin/yt-dlp"]:
-            if Path(path).exists():
-                yt_dlp_path = path
-                break
+    import sys
+    has_ytdlp_module = False
+    try:
+        import yt_dlp
+        has_ytdlp_module = True
+    except ImportError:
+        pass
 
-    if yt_dlp_path:
+    yt_dlp_cmd = None
+    if has_ytdlp_module:
+        yt_dlp_cmd = [sys.executable, "-m", "yt_dlp"]
+    else:
+        yt_dlp_path = shutil.which("yt-dlp")
+        if not yt_dlp_path:
+            # 尋找 macOS 常見的 Homebrew 或其他路徑
+            for path in ["/opt/homebrew/bin/yt-dlp", "/usr/local/bin/yt-dlp"]:
+                if Path(path).exists():
+                    yt_dlp_path = path
+                    break
+        if yt_dlp_path:
+            yt_dlp_cmd = [yt_dlp_path]
+
+    if yt_dlp_cmd:
         try:
-            logger.info(f"嘗試使用本機 yt-dlp 下載: {yt_dlp_path}")
+            logger.info(f"嘗試使用本機 yt-dlp 下載: {yt_dlp_cmd}")
             # yt-dlp 的檔名模板，它會自動將 %(ext)s 替換為轉換後的格式 (mp3)
             output_template = target_dir / "youtube.%(ext)s"
-            cmd = [
-                yt_dlp_path,
+            cmd = yt_dlp_cmd + [
                 "--extract-audio",
                 "--audio-format", "mp3",
                 "--audio-quality", "0",
