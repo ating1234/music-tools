@@ -32,49 +32,7 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
     if progress_callback:
         progress_callback(10)
 
-    # 嘗試使用外部 GPU Space 以獲得 15 秒的極速體驗
-    gpu_error = None
-    try:
-        from gradio_client import Client
-        
-        if progress_callback:
-            progress_callback(20)
-
-        print("正在嘗試連線至外部 GPU Space 進行人聲分離...")
-        client = Client("abidlabs/music-separation")
-        
-        if progress_callback:
-            progress_callback(30)
-
-        # 執行預測。Gradio Client 會自動將 input_path 上傳並等待 A100 GPU 運算完成
-        result = client.predict(
-            audio=str(input_path),
-            api_name="/inference"
-        )
-        
-        vocals_wav_path, accompaniment_wav_path = result
-        
-        if progress_callback:
-            progress_callback(80)
-
-        # 轉為 MP3 並壓縮成 ZIP
-        _zip_mp3s(output_path, {
-            "vocals": Path(vocals_wav_path), 
-            "accompaniment": Path(accompaniment_wav_path)
-        })
-        
-        if progress_callback:
-            progress_callback(96)
-        return  # 成功完成，直接返回
-        
-    except Exception as e:
-        gpu_error = str(e)
-        print(f"外部 GPU 分離失敗 (可能是限流)，原因: {gpu_error}。將自動切換為本地 CPU 分離...")
-        
-        if progress_callback:
-            progress_callback(35)
-
-    # Fallback: 本地 CPU 分離
+    # 直接使用本地設備進行分離 (不再嘗試連線經常受限的外部 GPU Space)
     try:
         import demucs.api
         
@@ -87,7 +45,7 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
         )
         
         if progress_callback:
-            progress_callback(45)
+            progress_callback(40)
 
         origin, separated = separator.separate_audio_file(str(input_path))
         
@@ -120,8 +78,8 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
         if progress_callback:
             progress_callback(96)
             
-    except Exception as local_err:
-        raise RuntimeError(f"人聲分離失敗。外部 GPU 限流錯誤: {gpu_error}。本地 CPU 處理錯誤: {str(local_err)}")
+    except Exception as e:
+        raise RuntimeError(f"本地人聲分離失敗，原因: {str(e)}")
 
 
 def separate_instruments(
