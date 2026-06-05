@@ -502,6 +502,29 @@ body {
   position: relative;
 }
 
+@keyframes lcd-container-blink {
+  0%, 100% {
+    border-color: #0f1012;
+    box-shadow: 
+      0 6px 16px rgba(0,0,0,0.5),
+      inset 0 2px 4px rgba(0,0,0,0.85);
+  }
+  50% {
+    border-color: rgba(255, 162, 23, 0.85);
+    box-shadow: 
+      0 0 15px rgba(255, 162, 23, 0.6),
+      0 6px 16px rgba(0,0,0,0.5),
+      inset 0 2px 4px rgba(0,0,0,0.85);
+  }
+}
+
+.lcd-container.processing {
+  animation: lcd-container-blink 1.5s infinite ease-in-out;
+  border-top-color: rgba(255, 162, 23, 0.85);
+  border-bottom-color: rgba(255, 162, 23, 0.85);
+}
+
+
 .lcd-display {
   background-color: #1e1606;
   background-image: 

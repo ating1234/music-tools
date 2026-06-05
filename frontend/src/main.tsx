@@ -311,6 +311,8 @@ function App() {
     return `[${'█'.repeat(filledCount)}${'░'.repeat(emptyCount)}] ${progress}%`;
   };
 
+  const jobRunning = job !== null && job.status !== 'finished' && job.status !== 'failed';
+
   return (
     <div className="studio-cabinet">
       <main className="studio-console">
@@ -326,6 +328,9 @@ function App() {
             <div className="console-title">
               <h1>{UI_TEXT.global.title}</h1>
               <p>{UI_TEXT.global.subtitle}</p>
+              <div style={{ fontSize: '10px', color: 'rgba(255, 162, 23, 0.65)', marginTop: '4px', letterSpacing: '0.05em' }}>
+                採用網路上的免費資源，所以轉檔速度慢，請耐心等待！
+              </div>
               <div className="api-node">{UI_TEXT.global.apiBase}{API_BASE}</div>
             </div>
 
@@ -615,7 +620,7 @@ function App() {
                       onChange={(event) => setFile(event.target.files?.[0] ?? null)}
                     />
                   </label>
-                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy}>
+                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy || jobRunning}>
                     {busy ? UI_TEXT.wavConverter.buttonBusy : UI_TEXT.wavConverter.buttonStart}
                   </button>
                 </form>
@@ -729,7 +734,7 @@ function App() {
                       onChange={(event) => setYoutubeUrl(event.target.value)}
                     />
                   </div>
-                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy}>
+                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy || jobRunning}>
                     {busy ? UI_TEXT.ytExtractor.buttonBusy : UI_TEXT.ytExtractor.buttonStart}
                   </button>
                 </form>
@@ -845,7 +850,7 @@ function App() {
                       onChange={(event) => setVocalFile(event.target.files?.[0] ?? null)}
                     />
                   </label>
-                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy}>
+                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={busy || jobRunning}>
                     {busy ? UI_TEXT.vocalSeparator.buttonBusy : UI_TEXT.vocalSeparator.buttonStart}
                   </button>
                 </form>
@@ -948,7 +953,7 @@ function App() {
                       onChange={(event) => setInstrumentFile(event.target.files?.[0] ?? null)}
                     />
                   </label>
-                  <button type="submit" className="console-btn btn-wide" disabled={busy}>
+                  <button type="submit" className="console-btn btn-wide" disabled={busy || jobRunning}>
                     {busy ? UI_TEXT.stemsSeparator.buttonBusy : UI_TEXT.stemsSeparator.buttonStart}
                   </button>
                 </form>
@@ -1010,7 +1015,7 @@ function App() {
                     />
                   </label>
                   
-                  <button type="button" className="console-btn btn-accent btn-wide" disabled={analyzing || !transformFile} onClick={() => void runAnalyze()}>
+                  <button type="button" className="console-btn btn-accent btn-wide" disabled={analyzing || !transformFile || jobRunning} onClick={() => void runAnalyze()}>
                     {analyzing ? UI_TEXT.pitch.buttonAnalyzing : UI_TEXT.pitch.buttonAnalyze}
                   </button>
                   
@@ -1083,7 +1088,7 @@ function App() {
                     />
                   </div>
                   
-                  <button type="submit" className="console-btn btn-wide" disabled={busy || !analysis}>
+                  <button type="submit" className="console-btn btn-wide" disabled={busy || !analysis || jobRunning}>
                     {busy ? UI_TEXT.wavConverter.buttonBusy : UI_TEXT.pitch.buttonStart}
                   </button>
                 </form>
@@ -1104,7 +1109,7 @@ function App() {
             {/* Right Column: 狀態監控與廣告面板 */}
             <div className="sidebar-rack">
               {/* LCD DISPLAY STATUS */}
-              <div className="lcd-container">
+              <div className={`lcd-container ${jobRunning ? 'processing' : ''}`}>
                 <div className="screw top-left" />
                 <div className="screw top-right" />
                 <div className="screw bottom-left" />
@@ -1112,8 +1117,15 @@ function App() {
                 <div className="lcd-display">
                   <div className="lcd-header">{UI_TEXT.status.title}</div>
                   
-                  {!job ? (
-                    <div className="lcd-text">{UI_TEXT.status.noJob}</div>
+                  {!job || job.status === 'finished' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div className="lcd-text">{UI_TEXT.status.noJob}</div>
+                      {job?.status === 'finished' && (
+                        <div className="lcd-text" style={{ fontSize: '0.75rem', color: '#00ff66', opacity: 0.85 }}>
+                          SUCCESS: {job.kind?.toUpperCase()} COMPLETED
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <div className="lcd-text">
