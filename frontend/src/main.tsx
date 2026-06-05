@@ -216,20 +216,51 @@ function App() {
 
   async function handleFileDownload(e: React.MouseEvent<HTMLAnchorElement>, url: string, defaultName: string) {
     e.preventDefault();
-    // 後端下載 API 已經包含 Content-Disposition: attachment 標頭，
-    // 直接以 window.location.href 觸發，能讓 iOS/Android 原生下載機制無縫運作，
-    // 同時避免了 Fetch 跨域與手機端 Blob 記憶體不足崩潰的問題！
-    setDownloadingFile(true);
-    try {
-      window.location.href = url;
-    } catch (err) {
-      console.error("導向下載失敗，嘗試新分頁開啟:", err);
-      window.open(url, '_blank');
+    
+    // 偵測是否為行動裝置 (手機或平板)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // 📱 行動端：直接在新分頁開啟 URL
+      // - 如果是 ZIP 壓縮檔，瀏覽器會直接彈出「是否下載」的原生提示，且新分頁會自動關閉。
+      // - 如果是 MP3 音訊檔，會在新分頁直接調用原生播放器播放，用戶可直接長按或點選「分享 -> 儲存至檔案」保存。
+      // 這樣能 100% 避免手機記憶體不足導致 Blob 下載卡死、或是原地導向導致原網頁卡在「等待中」的問題！
+      setDownloadingFile(true);
+      try {
+        window.open(url, '_blank');
+      } catch (err) {
+        console.error("手機端開啟下載分頁失敗:", err);
+        window.location.href = url;
+      }
+      setTimeout(() => {
+        setDownloadingFile(false);
+      }, 1000);
+      
+    } else {
+      // 💻 電腦端：使用傳統的 fetch + blob 下載，確保可以直接保存檔案而不跳轉頁面
+      setDownloadingFile(true);
+      setError(null);
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("下載失敗，伺服器無回應");
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = defaultName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => {
+          window.URL.revokeObjectURL(blobUrl);
+        }, 60000);
+      } catch (err) {
+        console.error("電腦端 Blob 下載失敗，回退至新分頁開啟:", err);
+        window.open(url, '_blank');
+      } finally {
+        setDownloadingFile(false);
+      }
     }
-    // 1.5 秒後恢復按鈕狀態，提供良好的點擊回饋
-    setTimeout(() => {
-      setDownloadingFile(false);
-    }, 1500);
   }
 
   function showWarningModal(message: string, onConfirm: () => void) {
