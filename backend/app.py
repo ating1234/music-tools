@@ -126,11 +126,59 @@ def youtube_download_api(url):
 
 
 # 6. Bug 回報 API
+def create_github_issue(title, body):
+    import urllib.request
+    import json
+    import os
+    
+    token = os.environ.get("GITHUB_BUG_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if not token:
+        return None
+        
+    repo = "ating1234/music-tools"
+    url = f"https://api.github.com/repos/{repo}/issues"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "Music-Tools-Bug-Reporter"
+    }
+    data = {
+        "title": title,
+        "body": body,
+        "labels": ["bug", "user-report"]
+    }
+    
+    req = urllib.request.Request(
+        url, 
+        data=json.dumps(data).encode("utf-8"), 
+        headers=headers, 
+        method="POST"
+    )
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            return res_data.get("html_url")
+    except Exception as e:
+        print(f"發送 GitHub Issue 失敗: {e}")
+        return None
+
+
 def submit_bug_api(title, description, email=""):
     import json
     from datetime import datetime
     if not title or not description:
         return {"success": False, "message": "標題與內容皆為必填！"}
+    
+    # 建立回報內容
+    body = f"## 錯誤描述\n{description}\n\n"
+    if email:
+        body += f"## 聯絡信箱\n{email}\n\n"
+    body += f"---\n*來自 Music Tools 用戶直接回報 ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})*"
+    
+    # 嘗試在背景自動建立 GitHub Issue (需要配置 GITHUB_TOKEN)
+    github_url = create_github_issue(f"[用戶回報] {title}", body)
+    
     try:
         # 儲存到專案根目錄的 storage/bugs.json
         project_root = Path(__file__).parent.parent
@@ -153,6 +201,7 @@ def submit_bug_api(title, description, email=""):
             "title": title,
             "description": description,
             "email": email,
+            "github_url": github_url,
             "timestamp": datetime.now().isoformat()
         }
         bugs.append(new_bug)
@@ -160,7 +209,10 @@ def submit_bug_api(title, description, email=""):
         with open(bug_file, "w", encoding="utf-8") as f:
             json.dump(bugs, f, ensure_ascii=False, indent=2)
             
-        return {"success": True, "message": f"Bug 已成功回報！編號：#{new_bug['id']}"}
+        if github_url:
+            return {"success": True, "message": f"Bug 已成功回報！我們已將其送至 GitHub Issues 管理面板。"}
+        else:
+            return {"success": True, "message": f"Bug 已儲存至本地服務器 (未配置 GitHub Token，儲存於 storage/bugs.json)。"}
     except Exception as e:
         return {"success": False, "message": f"儲存失敗: {str(e)}"}
 
