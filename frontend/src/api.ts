@@ -647,7 +647,18 @@ export function downloadUrl(job: Job): string | null {
 export async function submitBug(title: string, description: string, email: string = "") {
   try {
     const app = await getClient();
-    const result = await app.predict("/submit_bug", [title, description, email]);
+    
+    // 實作 6 秒超時機制，防止遠端後端尚未部署完成時，前端呼叫 predict 永遠掛起
+    const predictPromise = app.predict("/submit_bug", [title, description, email]);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("伺服器回應超時，可能後端服務尚未更新部署。")), 6000)
+    );
+    
+    const result = (await Promise.race([predictPromise, timeoutPromise])) as any;
+    if (!result || !result.data || !result.data[0]) {
+      throw new Error("伺服器回傳格式錯誤");
+    }
+    
     return result.data[0] as { success: boolean; message: string };
   } catch (err) {
     console.error("回報 Bug 失敗:", err);
@@ -657,4 +668,5 @@ export async function submitBug(title: string, description: string, email: strin
     };
   }
 }
+
 
