@@ -126,152 +126,82 @@ def youtube_download_api(url):
 
 
 # 6. Bug 回報 API
-def send_telegram_notification(title, description, email=""):
-    import urllib.request
-    import json
-    import os
-    from datetime import datetime
-    
-    token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
-    
-    if not token or not chat_id:
-        print("未配置 TELEGRAM_BOT_TOKEN 或 TELEGRAM_CHAT_ID，跳過 Telegram 通知。")
-        return False
-        
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    
-    # 組裝 Telegram 訊息 (Markdown 格式)
-    message = (
-        f"🚨 *【新 Bug 回報通知】*\n\n"
-        f"📱 *來源應用*: Music Tools\n"
-        f"📝 *主旨*: {title}\n\n"
-        f"🔍 *詳細描述*:\n{description}\n\n"
-    )
-    if email:
-        message += f"📧 *聯絡信箱*: {email}\n"
-        
-    message += f"\n📅 *回報時間*: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-    
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = {
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
-    
-    req = urllib.request.Request(
-        url, 
-        data=json.dumps(data).encode("utf-8"), 
-        headers=headers, 
-        method="POST"
-    )
-    
-    try:
-        with urllib.request.urlopen(req) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            return res_data.get("ok", False)
-    except Exception as e:
-        print(f"發送 Telegram 通知失敗: {e}")
-        return False
-
-
-def create_github_issue(title, body):
-    import urllib.request
-    import json
-    import os
-    
-    token = os.environ.get("GITHUB_BUG_TOKEN") or os.environ.get("GITHUB_TOKEN")
-    if not token:
-        return None
-        
-    repo = "ating1234/music-tools"
-    url = f"https://api.github.com/repos/{repo}/issues"
-    headers = {
-        "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "Music-Tools-Bug-Reporter"
-    }
-    data = {
-        "title": title,
-        "body": body,
-        "labels": ["bug", "user-report"]
-    }
-    
-    req = urllib.request.Request(
-        url, 
-        data=json.dumps(data).encode("utf-8"), 
-        headers=headers, 
-        method="POST"
-    )
-    
-    try:
-        with urllib.request.urlopen(req) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            return res_data.get("html_url")
-    except Exception as e:
-        print(f"發送 GitHub Issue 失敗: {e}")
-        return None
-
-
 def submit_bug_api(title, description, email=""):
+    import urllib.request
     import json
+    import os
     from datetime import datetime
+    
     if not title or not description:
         return {"success": False, "message": "標題與內容皆為必填！"}
-    
-    # 建立回報內容
-    body = f"## 錯誤描述\n{description}\n\n"
-    if email:
-        body += f"## 聯絡信箱\n{email}\n\n"
-    body += f"---\n*來自 Music Tools 用戶直接回報 ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})*"
-    
-    # 嘗試在背景自動建立 GitHub Issue (需要配置 GITHUB_TOKEN)
-    github_url = create_github_issue(f"[用戶回報] {title}", body)
-    
-    # 嘗試發送 Telegram 通知
-    tg_sent = send_telegram_notification(title, description, email)
-    
-    try:
-        # 儲存到專案根目錄 of storage/bugs.json
-        project_root = Path(__file__).parent.parent
-        storage_bugs_dir = project_root / "storage"
-        storage_bugs_dir.mkdir(parents=True, exist_ok=True)
-        bug_file = storage_bugs_dir / "bugs.json"
         
-        # 讀取現有的 bugs
-        bugs = []
-        if bug_file.exists():
-            try:
-                with open(bug_file, "r", encoding="utf-8") as f:
-                    bugs = json.load(f)
-            except Exception:
-                bugs = []
-        
-        # 新增 bug
-        new_bug = {
-            "id": len(bugs) + 1,
-            "title": title,
-            "description": description,
-            "email": email,
-            "github_url": github_url,
-            "telegram_sent": tg_sent,
+    bug_center_url = os.environ.get("BUG_CENTER_URL")
+    api_key = os.environ.get("BUG_CENTER_API_KEY")
+    
+    # 優雅降級：若無配置集中回報伺服器，預設存入本地 storage/bugs.json
+    if not bug_center_url:
+        try:
+            project_root = Path(__file__).parent.parent
+            storage_bugs_dir = project_root / "storage"
+            storage_bugs_dir.mkdir(parents=True, exist_ok=True)
+            bug_file = storage_bugs_dir / "bugs.json"
+            
+            bugs = []
+            if bug_file.exists():
+                try:
+                    with open(bug_file, "r", encoding="utf-8") as f:
+                        bugs = json.load(f)
+                except Exception:
+                    bugs = []
+            
+            new_bug = {
+                "id": len(bugs) + 1,
+                "title": title,
+                "description": description,
+                "email": email,
+                "timestamp": datetime.now().isoformat()
+            }
+            bugs.append(new_bug)
+            
+            with open(bug_file, "w", encoding="utf-8") as f:
+                json.dump(bugs, f, ensure_ascii=False, indent=2)
+                
+            return {"success": True, "message": "Bug 已儲存至本地服務器 (storage/bugs.json)。"}
+        except Exception as e:
+            return {"success": False, "message": f"本地儲存失敗: {str(e)}"}
+            
+    # 對接到集中回報伺服器
+    url = f"{bug_center_url.rstrip('/')}/api/reports"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Bug-API-Key": api_key or ""
+    }
+    data = {
+        "app_name": "Music Tools",
+        "title": title,
+        "description": description,
+        "email": email,
+        "meta": {
             "timestamp": datetime.now().isoformat()
         }
-        bugs.append(new_bug)
-        
-        with open(bug_file, "w", encoding="utf-8") as f:
-            json.dump(bugs, f, ensure_ascii=False, indent=2)
-            
-        success_msg = "Bug 已成功回報並儲存！"
-        if tg_sent:
-            success_msg += " (已成功發送 Telegram 通知)"
-            
-        return {"success": True, "message": success_msg}
+    }
+    
+    req = urllib.request.Request(
+        url, 
+        data=json.dumps(data).encode("utf-8"), 
+        headers=headers, 
+        method="POST"
+    )
+    
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            if res_data.get("success"):
+                return {"success": True, "message": "Bug 已成功回報至集中式回報系統！"}
+            else:
+                return {"success": False, "message": res_data.get("message", "集中伺服器拒絕回報。")}
     except Exception as e:
-        return {"success": False, "message": f"儲存失敗: {str(e)}"}
+        return {"success": False, "message": f"對接集中回報伺服器失敗: {str(e)}"}
 
 
 # 建立 Gradio Blocks 介面供 REST API 對接

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制台 | 集中式 Bug 回報中心</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #08090c;
+            --color-surface: #111318;
+            --color-surface-hover: #161a22;
+            --color-primary: #ff4d3d;
+            --color-primary-glow: rgba(255, 77, 61, 0.2);
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-text: #f1f5f9;
+            --color-text-muted: #64748b;
+            --color-border: #20242f;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        header {
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(17, 19, 24, 0.85);
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 77, 61, 0.1);
+            border: 1px solid var(--color-primary);
+            border-radius: 8px;
+            color: var(--color-primary);
+            font-size: 18px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            box-shadow: 0 0 10px rgba(255, 77, 61, 0.2);
+        }
+
+        .header-logo h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid var(--color-border);
+            background: transparent;
+            color: var(--color-text);
+        }
+
+        .nav-btn:hover {
+            border-color: #475569;
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-btn.active {
+            border-color: var(--color-primary);
+            background-color: rgba(255, 77, 61, 0.05);
+            color: var(--color-primary);
+        }
+
+        .nav-btn.logout {
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .nav-btn.logout:hover {
+            background-color: rgba(239, 68, 68, 0.05);
+            border-color: #ef4444;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            padding: 0 20px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-title h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .dashboard-title p {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background-color: var(--color-bg);
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            border: 1px solid var(--color-border);
+        }
+
+        /* Bug 列表 */
+        .report-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .report-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .report-card:hover {
+            border-color: #334155;
+            background-color: var(--color-surface-hover);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            gap: 15px;
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .app-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--color-border);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #94a3b8;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .status-badge.pending {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .status-badge.resolved {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.ignored {
+            background-color: rgba(100, 116, 139, 0.1);
+            color: #94a3b8;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+
+        .card-time {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+        }
+
+        .card-body {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+
+        .card-meta {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--color-border);
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .meta-row {
+            margin-bottom: 4px;
+        }
+        .meta-row:last-child {
+            margin-bottom: 0;
+        }
+        .meta-label {
+            color: var(--color-text-muted);
+            margin-right: 5px;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--color-border);
+            padding-top: 18px;
+        }
+
+        .user-email {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+        .user-email a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        .user-email a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid var(--color-border);
+            background: transparent;
+            color: var(--color-text);
+        }
+
+        .action-btn:hover {
+            border-color: #475569;
+        }
+
+        .action-btn.resolve {
+            background-color: rgba(16, 185, 129, 0.05);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+        .action-btn.resolve:hover {
+            background-color: var(--color-success);
+            color: #fff;
+            border-color: var(--color-success);
+        }
+
+        .action-btn.ignore {
+            background-color: rgba(100, 116, 139, 0.05);
+            border-color: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+        }
+        .action-btn.ignore:hover {
+            background-color: #475569;
+            color: #fff;
+            border-color: #475569;
+        }
+
+        .action-btn.delete {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.1);
+        }
+        .action-btn.delete:hover {
+            background-color: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+        }
+
+        /* 滿版提示 */
+        .empty-state {
+            background-color: var(--color-surface);
+            border: 1px dashed var(--color-border);
+            border-radius: 12px;
+            padding: 60px;
+            text-align: center;
+            color: var(--color-text-muted);
+        }
+
+        .empty-state h3 {
+            color: #fff;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-logo">
+            <div class="logo-icon">⚡</div>
+            <h2>集中式 Bug 回報中心</h2>
+        </div>
+        <div class="header-nav">
+            <a href="/admin" class="nav-btn active">回報列表</a>
+            <a href="/admin/settings" class="nav-btn">系統設定</a>
+            <a href="/logout" class="nav-btn logout">登出</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>回報列表</h1>
+                <p>集中接收並處理所有站點的 Bug 資訊</p>
+            </div>
+            
+            <div class="filter-group">
+                <a href="/admin?status_filter=pending" class="filter-btn {% if status_filter == 'pending' %}active{% endif %}">未處理</a>
+                <a href="/admin?status_filter=resolved" class="filter-btn {% if status_filter == 'resolved' %}active{% endif %}">已解決</a>
+                <a href="/admin?status_filter=ignored" class="filter-btn {% if status_filter == 'ignored' %}active{% endif %}">已忽略</a>
+                <a href="/admin?status_filter=all" class="filter-btn {% if status_filter == 'all' %}active{% endif %}">全部回報</a>
+            </div>
+        </div>
+
+        <div class="report-list">
+            {% if reports %}
+                {% for r in reports %}
+                <div class="report-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="status-badge {{ r.status }}">{{ r.status }}</span>
+                            <span class="app-badge">{{ r.app_name }}</span>
+                            <h3 class="card-title">{{ r.title }}</h3>
+                        </div>
+                        <span class="card-time">{{ r.created_at }}</span>
+                    </div>
+                    
+                    <div class="card-body">{{ r.description }}</div>
+                    
+                    {% if r.meta %}
+                    <div class="card-meta">
+                        <div class="meta-row">
+                            <span class="meta-label">[環境資料]</span>
+                        </div>
+                        {% for k, v in r.meta.items() %}
+                        <div class="meta-row">
+                            <span class="meta-label">{{ k }}:</span> {{ v }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-actions">
+                        <div class="user-email">
+                            {% if r.email %}
+                            聯絡信箱：<a href="mailto:{{ r.email }}">{{ r.email }}</a>
+                            {% else %}
+                            使用者未提供信箱
+                            {% endif %}
+                        </div>
+                        
+                        <div class="btn-group">
+                            {% if r.status != 'resolved' %}
+                            <form action="/admin/status/{{ r.id }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="new_status" value="resolved">
+                                <button type="submit" class="action-btn resolve">標記為已解決</button>
+                            </form>
+                            {% endif %}
+                            
+                            {% if r.status != 'ignored' %}
+                            <form action="/admin/status/{{ r.id }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="new_status" value="ignored">
+                                <button type="submit" class="action-btn ignore">忽略</button>
+                            </form>
+                            {% endif %}
+                            
+                            <form action="/admin/delete/{{ r.id }}" method="POST" style="display:inline;" onsubmit="return confirm('確定要刪除這筆回報嗎？');">
+                                <button type="submit" class="action-btn delete">刪除</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <h3>🎉 恭喜你，沒有任何待處理的 Bug</h3>
+                    <p>當前篩選條件下沒有找到任何 Bug 回報紀錄。</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
