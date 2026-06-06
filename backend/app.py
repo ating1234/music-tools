@@ -126,6 +126,58 @@ def youtube_download_api(url):
 
 
 # 6. Bug 回報 API
+def send_telegram_notification(title, description, email=""):
+    import urllib.request
+    import json
+    import os
+    from datetime import datetime
+    
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    
+    if not token or not chat_id:
+        print("未配置 TELEGRAM_BOT_TOKEN 或 TELEGRAM_CHAT_ID，跳過 Telegram 通知。")
+        return False
+        
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    
+    # 組裝 Telegram 訊息 (Markdown 格式)
+    message = (
+        f"🚨 *【新 Bug 回報通知】*\n\n"
+        f"📱 *來源應用*: Music Tools\n"
+        f"📝 *主旨*: {title}\n\n"
+        f"🔍 *詳細描述*:\n{description}\n\n"
+    )
+    if email:
+        message += f"📧 *聯絡信箱*: {email}\n"
+        
+    message += f"\n📅 *回報時間*: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
+    
+    req = urllib.request.Request(
+        url, 
+        data=json.dumps(data).encode("utf-8"), 
+        headers=headers, 
+        method="POST"
+    )
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            return res_data.get("ok", False)
+    except Exception as e:
+        print(f"發送 Telegram 通知失敗: {e}")
+        return False
+
+
 def create_github_issue(title, body):
     import urllib.request
     import json
@@ -179,8 +231,11 @@ def submit_bug_api(title, description, email=""):
     # 嘗試在背景自動建立 GitHub Issue (需要配置 GITHUB_TOKEN)
     github_url = create_github_issue(f"[用戶回報] {title}", body)
     
+    # 嘗試發送 Telegram 通知
+    tg_sent = send_telegram_notification(title, description, email)
+    
     try:
-        # 儲存到專案根目錄的 storage/bugs.json
+        # 儲存到專案根目錄 of storage/bugs.json
         project_root = Path(__file__).parent.parent
         storage_bugs_dir = project_root / "storage"
         storage_bugs_dir.mkdir(parents=True, exist_ok=True)
@@ -202,6 +257,7 @@ def submit_bug_api(title, description, email=""):
             "description": description,
             "email": email,
             "github_url": github_url,
+            "telegram_sent": tg_sent,
             "timestamp": datetime.now().isoformat()
         }
         bugs.append(new_bug)
@@ -209,10 +265,11 @@ def submit_bug_api(title, description, email=""):
         with open(bug_file, "w", encoding="utf-8") as f:
             json.dump(bugs, f, ensure_ascii=False, indent=2)
             
-        if github_url:
-            return {"success": True, "message": f"Bug 已成功回報！我們已將其送至 GitHub Issues 管理面板。"}
-        else:
-            return {"success": True, "message": f"Bug 已儲存至本地服務器 (未配置 GitHub Token，儲存於 storage/bugs.json)。"}
+        success_msg = "Bug 已成功回報並儲存！"
+        if tg_sent:
+            success_msg += " (已成功發送 Telegram 通知)"
+            
+        return {"success": True, "message": success_msg}
     except Exception as e:
         return {"success": False, "message": f"儲存失敗: {str(e)}"}
 
