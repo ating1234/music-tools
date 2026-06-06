@@ -2068,3 +2068,32 @@ body {
     display: none;
   }
 }
+
+/* Bug 回報多行輸入框與按鈕重置 */
+.console-textarea {
+  width: 100%;
+  background-color: #08090a;
+  border: 1.5px solid #374151;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.85);
+  resize: vertical;
+  min-height: 100px;
+}
+.console-textarea:focus {
+  border-color: var(--color-amber-glow);
+}
+.console-textarea::placeholder {
+  color: #3b3e48;
+}
+
+button.studio-footer-link {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+

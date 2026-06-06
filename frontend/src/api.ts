@@ -643,3 +643,18 @@ export function downloadUrl(job: Job): string | null {
   // Gradio 返回的 url 已經是完整的 HTTPS 下載網址，直接返回即可
   return job.download_url;
 }
+
+export async function submitBug(title: string, description: string, email: string = "") {
+  try {
+    const app = await getClient();
+    const result = await app.predict("/submit_bug", [title, description, email]);
+    return result.data[0] as { success: boolean; message: string };
+  } catch (err) {
+    console.error("回報 Bug 失敗:", err);
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : String(err)
+    };
+  }
+}
+

@@ -14,6 +14,7 @@ import {
   separateVocals,
   transformAudio,
   uploadWav,
+  submitBug,
 } from './api';
 
 if ('serviceWorker' in navigator) {
@@ -93,6 +94,11 @@ function App() {
   const [modalTitle, setModalTitle] = useState("提示！");
   const [modalMessage, setModalMessage] = useState("");
   const modalConfirmRef = useRef<(() => void) | null>(null);
+  const [bugModalOpen, setBugModalOpen] = useState(false);
+  const [bugTitle, setBugTitle] = useState('');
+  const [bugDesc, setBugDesc] = useState('');
+  const [bugEmail, setBugEmail] = useState('');
+  const [submittingBug, setSubmittingBug] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<Job[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -1353,11 +1359,115 @@ function App() {
       <footer className="studio-footer">
         <div className="studio-footer-content">
           <span className="studio-footer-text">
-            系統破防了？👉 <a href="https://github.com/ating1234/music-tools/issues/new?labels=bug&title=Bug+Report" target="_blank" rel="noopener noreferrer" className="studio-footer-link link-bug">回報 Bug</a>
+            系統破防了？👉 <button type="button" onClick={() => setBugModalOpen(true)} className="studio-footer-link link-bug">回報 Bug</button>
           </span>
         </div>
       </footer>
       
+      {bugModalOpen && (
+        <div className="console-modal-overlay">
+          <div className="console-modal-box" style={{ maxWidth: '500px', width: '90%' }}>
+            <div className="screw top-left" />
+            <div className="screw top-right" />
+            <div className="screw bottom-left" />
+            <div className="screw bottom-right" />
+            <div className="console-modal-header">
+              <span className="modal-title-led" />
+              <h3>[ BUG REPORT / 系統錯誤回報 ]</h3>
+            </div>
+            <div className="console-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+              <div className="console-field">
+                <label style={{ color: '#9ca3af', fontSize: '0.75rem', marginBottom: '4px', display: 'block' }}>
+                  主旨 / Title <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  className="console-input-text"
+                  placeholder="請簡述遇到的錯誤，例如：人聲分離時卡住"
+                  value={bugTitle}
+                  onChange={(e) => setBugTitle(e.target.value)}
+                  disabled={submittingBug}
+                />
+              </div>
+              
+              <div className="console-field">
+                <label style={{ color: '#9ca3af', fontSize: '0.75rem', marginBottom: '4px', display: 'block' }}>
+                  詳細描述 / Description <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <textarea
+                  className="console-textarea"
+                  placeholder="請提供重現步驟或錯誤訊息，以利我們修復問題。"
+                  value={bugDesc}
+                  onChange={(e) => setBugDesc(e.target.value)}
+                  disabled={submittingBug}
+                />
+              </div>
+
+              <div className="console-field">
+                <label style={{ color: '#9ca3af', fontSize: '0.75rem', marginBottom: '4px', display: 'block' }}>
+                  聯絡信箱 / Email (選填)
+                </label>
+                <input
+                  type="email"
+                  className="console-input-text"
+                  placeholder="your-email@example.com (若您希望收到修復通知)"
+                  value={bugEmail}
+                  onChange={(e) => setBugEmail(e.target.value)}
+                  disabled={submittingBug}
+                />
+              </div>
+            </div>
+            <div className="console-modal-footer" style={{ justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="console-btn"
+                onClick={() => {
+                  if (!submittingBug) {
+                    setBugModalOpen(false);
+                    setBugTitle('');
+                    setBugDesc('');
+                    setBugEmail('');
+                  }
+                }}
+                disabled={submittingBug}
+              >
+                [ CANCEL / 取消 ]
+              </button>
+              <button
+                type="button"
+                className="console-btn btn-accent"
+                onClick={async () => {
+                  if (!bugTitle.trim() || !bugDesc.trim()) {
+                    showWarningModal("主旨與詳細描述為必填欄位！", () => {});
+                    return;
+                  }
+                  setSubmittingBug(true);
+                  try {
+                    const res = await submitBug(bugTitle, bugDesc, bugEmail);
+                    if (res && res.success) {
+                      setBugModalOpen(false);
+                      setBugTitle('');
+                      setBugDesc('');
+                      setBugEmail('');
+                      showWarningModal(res.message || "Bug 已成功回報！感謝您的協助。", () => {});
+                    } else {
+                      showWarningModal(res?.message || "回報失敗，請稍後再試！", () => {});
+                    }
+                  } catch (err) {
+                    showWarningModal("回報失敗，請確認後端服務是否正常運作。", () => {});
+                  } finally {
+                    setSubmittingBug(false);
+                  }
+                }}
+                disabled={submittingBug}
+              >
+                {submittingBug ? '[ SENDING / 送出中... ]' : '[ SUBMIT / 送出回報 ]'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {modalOpen && (
         <div className="console-modal-overlay">
           <div className="console-modal-box">

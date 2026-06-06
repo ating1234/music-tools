@@ -125,6 +125,46 @@ def youtube_download_api(url):
         raise gr.Error(f"YouTube 下載失敗: {str(e)}")
 
 
+# 6. Bug 回報 API
+def submit_bug_api(title, description, email=""):
+    import json
+    from datetime import datetime
+    if not title or not description:
+        return {"success": False, "message": "標題與內容皆為必填！"}
+    try:
+        # 儲存到專案根目錄的 storage/bugs.json
+        project_root = Path(__file__).parent.parent
+        storage_bugs_dir = project_root / "storage"
+        storage_bugs_dir.mkdir(parents=True, exist_ok=True)
+        bug_file = storage_bugs_dir / "bugs.json"
+        
+        # 讀取現有的 bugs
+        bugs = []
+        if bug_file.exists():
+            try:
+                with open(bug_file, "r", encoding="utf-8") as f:
+                    bugs = json.load(f)
+            except Exception:
+                bugs = []
+        
+        # 新增 bug
+        new_bug = {
+            "id": len(bugs) + 1,
+            "title": title,
+            "description": description,
+            "email": email,
+            "timestamp": datetime.now().isoformat()
+        }
+        bugs.append(new_bug)
+        
+        with open(bug_file, "w", encoding="utf-8") as f:
+            json.dump(bugs, f, ensure_ascii=False, indent=2)
+            
+        return {"success": True, "message": f"Bug 已成功回報！編號：#{new_bug['id']}"}
+    except Exception as e:
+        return {"success": False, "message": f"儲存失敗: {str(e)}"}
+
+
 # 建立 Gradio Blocks 介面供 REST API 對接
 with gr.Blocks(title="Music Tools Engine") as demo:
     gr.Markdown("# Music Tools Backend (ZeroGPU)")
@@ -169,6 +209,16 @@ with gr.Blocks(title="Music Tools Engine") as demo:
         out_yt = gr.File(label="Downloaded MP3")
         btn_yt = gr.Button("Download YT")
         btn_yt.click(fn=youtube_download_api, inputs=inp_yt, outputs=out_yt, api_name="youtube")
+
+        # Bug 回報
+        inp_bug = [
+            gr.Textbox(label="Title"),
+            gr.Textbox(label="Description"),
+            gr.Textbox(label="Email")
+        ]
+        out_bug = gr.JSON(label="Submit Result")
+        btn_bug = gr.Button("Submit Bug")
+        btn_bug.click(fn=submit_bug_api, inputs=inp_bug, outputs=out_bug, api_name="submit_bug")
 
 if __name__ == "__main__":
     demo.queue().launch(server_name="0.0.0.0", server_port=7860)

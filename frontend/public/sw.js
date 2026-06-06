@@ -1,4 +1,4 @@
-const CACHE = 'music-tools-v1';
+const CACHE = 'music-tools-v2';
 const SHELL = ['/', '/index.html', '/icon.svg', '/manifest.webmanifest'];
 
 self.addEventListener('install', e => {
