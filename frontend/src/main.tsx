@@ -1451,10 +1451,36 @@ function App() {
                       setBugEmail('');
                       showWarningModal(res.message || "Bug 已成功回報！感謝您的協助。", () => {});
                     } else {
-                      showWarningModal(res?.message || "回報失敗，請稍後再試！", () => {});
+                      // 後端回報失敗，優雅降級：導向 GitHub 預填 Bug Issue
+                      setBugModalOpen(false);
+                      const bodyContent = `### Bug 描述\n${bugDesc}\n\n### 聯絡信箱\n${bugEmail || '無'}\n\n---\n*此 Issue 經由本機音樂工具錯誤回報表單自動預填生成*`;
+                      const githubUrl = `https://github.com/ating1234/music-tools/issues/new?title=${encodeURIComponent(bugTitle)}&body=${encodeURIComponent(bodyContent)}&labels=bug`;
+                      
+                      showWarningModal(
+                        `後端服務回報失敗 (${res?.message || '未知錯誤'})。系統將為您開啟 GitHub 預填單，請於新視窗中送出以完成回報。`,
+                        () => {
+                          window.open(githubUrl, '_blank');
+                          setBugTitle('');
+                          setBugDesc('');
+                          setBugEmail('');
+                        }
+                      );
                     }
                   } catch (err) {
-                    showWarningModal("回報失敗，請確認後端服務是否正常運作。", () => {});
+                    // 網路錯誤或超時，優雅降級：導向 GitHub 預填 Bug Issue
+                    setBugModalOpen(false);
+                    const bodyContent = `### Bug 描述\n${bugDesc}\n\n### 聯絡信箱\n${bugEmail || '無'}\n\n---\n*此 Issue 經由本機音樂工具錯誤回報表單自動預填生成*`;
+                    const githubUrl = `https://github.com/ating1234/music-tools/issues/new?title=${encodeURIComponent(bugTitle)}&body=${encodeURIComponent(bodyContent)}&labels=bug`;
+                    
+                    showWarningModal(
+                      "無法連線至後端服務或回應超時。系統將自動為您開啟 GitHub 預填單，請於新視窗中送出以完成回報。",
+                      () => {
+                        window.open(githubUrl, '_blank');
+                        setBugTitle('');
+                        setBugDesc('');
+                        setBugEmail('');
+                      }
+                    );
                   } finally {
                     setSubmittingBug(false);
                   }
