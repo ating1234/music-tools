@@ -1262,9 +1262,6 @@ body {
   gap: 20px;
 }
 
-.pitch-tempo-rack-unit {
-  width: 100%;
-}
 
 @media (max-width: 992px) {
   .studio-cabinet-layout {

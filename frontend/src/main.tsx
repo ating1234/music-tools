@@ -562,8 +562,8 @@ function App() {
                 </div>
               )}
 
-              {/* 只有在非手機端，或者在手機端且有選中 CH01~CH03 時才渲染此 grid */}
-              {(!isMobile || ['wav', 'vocal', 'stems'].includes(activeMobileModule)) && (
+              {/* 只有在非手機端，或者在手機端且有選中任一 CH 時才渲染此 grid */}
+              {(!isMobile || ['wav', 'vocal', 'stems', 'pitch'].includes(activeMobileModule)) && (
                 <div className="audio-modules-grid">
 
             {/* CH 01: WAV TO MP3 */}
@@ -885,14 +885,9 @@ function App() {
                 <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 03</div>
               </div>
             ) : null)}
-          </div>
-          )}
 
-          {/* 只有在非手機端，或者在手機端且有選中 CH 05 時才渲染此 unit */}
-          {(!isMobile || activeMobileModule === 'pitch') && (
-            <div className="pitch-tempo-rack-unit">
-              {/* CH 05: PITCH & TEMPO */}
-              {(!isMobile && showPitch) || (isMobile && activeMobileModule === 'pitch') ? (
+            {/* CH 04: PITCH & TEMPO */}
+            {(!isMobile && showPitch) || (isMobile && activeMobileModule === 'pitch') ? (
               <div className="channel-strip">
                 <div className="screw top-left" />
                 <div className="screw top-right" />
@@ -1020,7 +1015,7 @@ function App() {
                 <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 04</div>
               </div>
             ) : null)}
-            </div>
+          </div>
           )}
             </div> {/* main-rack end */}
 
