@@ -5,7 +5,6 @@ import {
   AudioAnalysis,
   Job,
   analyzeAudio,
-  createYoutubeJob,
   deleteJob,
   downloadUrl,
   getJob,
@@ -58,7 +57,6 @@ function statusLabel(job: Job | null): string {
 function App() {
   // Module power states (Toggle components display)
   const [showWav, setShowWav] = useState(true);
-  const [showYoutube, setShowYoutube] = useState(true);
   const [showVocalSep, setShowVocalSep] = useState(true);
   const [showStemsSep, setShowStemsSep] = useState(true);
   const [showPitch, setShowPitch] = useState(true);
@@ -85,7 +83,6 @@ function App() {
   const [targetBpm, setTargetBpm] = useState('');
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
   const [instrumentQuality, setInstrumentQuality] = useState('standard');
-  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [job, setJob] = useState<Job | null>(null);
   const [busy, setBusy] = useState(false);
   const [downloadingFile, setDownloadingFile] = useState(false);
@@ -104,7 +101,7 @@ function App() {
   const [historyOpen, setHistoryOpen] = useState(false);
   // 手機版單頁 RWD 選單狀態
   const [isMobile, setIsMobile] = useState(false);
-  const [activeMobileModule, setActiveMobileModule] = useState<'menu' | 'wav' | 'youtube' | 'vocal' | 'stems' | 'pitch'>('menu');
+  const [activeMobileModule, setActiveMobileModule] = useState<'menu' | 'wav' | 'vocal' | 'stems' | 'pitch'>('menu');
 
   useEffect(() => {
     const handleResize = () => {
@@ -115,12 +112,10 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const selectMobileModule = (module: 'menu' | 'wav' | 'youtube' | 'vocal' | 'stems' | 'pitch') => {
+  const selectMobileModule = (module: 'menu' | 'wav' | 'vocal' | 'stems' | 'pitch') => {
     setActiveMobileModule(module);
     if (module === 'wav') {
       setShowWav(true);
-    } else if (module === 'youtube') {
-      setShowYoutube(true);
     } else if (module === 'vocal') {
       setShowVocalSep(true);
     } else if (module === 'stems') {
@@ -130,14 +125,10 @@ function App() {
     }
   };
 
-  // CH 01 - 03 Newly Added Hardware States (v8)
+  // CH 01 - 02 Hardware States
   const [wavBitrate, setWavBitrate] = useState('320');
   const [wavLowCut, setWavLowCut] = useState(false);
   const [wavMono, setWavMono] = useState(false);
-
-  const [ytFormat, setYtFormat] = useState('mp3');
-  const [ytGain, setYtGain] = useState('0');
-  const [ytNormalize, setYtNormalize] = useState(false);
 
   const [vocalNoise, setVocalNoise] = useState('mid');
   const [vocalVolume, setVocalVolume] = useState(8);
@@ -359,22 +350,6 @@ function App() {
     return 90;
   };
 
-  const getFormatKnobAngle = (val: string) => {
-    if (val === 'mp3') return -90;
-    if (val === 'wav') return -30;
-    if (val === 'm4a') return 30;
-    if (val === 'flac') return 90;
-    return -90;
-  };
-
-  const getGainKnobAngle = (val: string) => {
-    if (val === '-3') return -90;
-    if (val === '0') return -30;
-    if (val === '+3') return 30;
-    if (val === '+6') return 90;
-    return -30;
-  };
-
   const getNoiseKnobAngle = (val: string) => {
     if (val === 'off') return -90;
     if (val === 'low') return -30;
@@ -442,27 +417,7 @@ function App() {
                   </span>
                 </div>
 
-                {/* CH2: YT */}
-                {!isMobile && (
-                  <div className="power-switch-item">
-                    <span className="power-switch-label">{UI_TEXT.powerPanel.ytToggle}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span className={`led-indicator green ${showYoutube ? 'on' : ''}`} />
-                      <label className="toggle-lever">
-                        <input
-                          type="checkbox"
-                          checked={showYoutube}
-                          onChange={(e) => setShowYoutube(e.target.checked)}
-                        />
-                        <div className="switch-track">
-                          <div className="switch-lever" />
-                        </div>
-                      </label>
-                    </span>
-                  </div>
-                )}
-
-                {/* CH3: VOCAL */}
+                {/* CH2: VOCAL */}
                 {!isMobile && (
                   <div className="power-switch-item">
                     <span className="power-switch-label">{UI_TEXT.powerPanel.vocalToggle}</span>
@@ -578,19 +533,10 @@ function App() {
                     <p>{UI_TEXT.wavConverter.desc}</p>
                   </button>
                   
-                  <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('youtube')}>
-                    <div className="card-led green" />
-                    <div className="card-header">
-                      <span className="card-ch">CH 02</span>
-                      <h3>📺 {UI_TEXT.ytExtractor.title}</h3>
-                    </div>
-                    <p>{UI_TEXT.ytExtractor.desc}</p>
-                  </button>
-
                   <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('vocal')}>
                     <div className="card-led green" />
                     <div className="card-header">
-                      <span className="card-ch">CH 03</span>
+                      <span className="card-ch">CH 02</span>
                       <h3>🎙️ {UI_TEXT.vocalSeparator.title}</h3>
                     </div>
                     <p>{UI_TEXT.vocalSeparator.desc}</p>
@@ -599,7 +545,7 @@ function App() {
                   <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('stems')}>
                     <div className="card-led green" />
                     <div className="card-header">
-                      <span className="card-ch">CH 04</span>
+                      <span className="card-ch">CH 03</span>
                       <h3>🎸 {UI_TEXT.stemsSeparator.title}</h3>
                     </div>
                     <p>{UI_TEXT.stemsSeparator.desc}</p>
@@ -608,7 +554,7 @@ function App() {
                   <button type="button" className="mobile-menu-card" onClick={() => selectMobileModule('pitch')}>
                     <div className="card-led green" />
                     <div className="card-header">
-                      <span className="card-ch">CH 05</span>
+                      <span className="card-ch">CH 04</span>
                       <h3>🎛️ {UI_TEXT.pitch.title}</h3>
                     </div>
                     <p>{UI_TEXT.pitch.desc}</p>
@@ -616,8 +562,8 @@ function App() {
                 </div>
               )}
 
-              {/* 只有在非手機端，或者在手機端且有選中 CH01~CH04 時才渲染此 grid */}
-              {(!isMobile || ['wav', 'youtube', 'vocal', 'stems'].includes(activeMobileModule)) && (
+              {/* 只有在非手機端，或者在手機端且有選中 CH01~CH03 時才渲染此 grid */}
+              {(!isMobile || ['wav', 'vocal', 'stems'].includes(activeMobileModule)) && (
                 <div className="audio-modules-grid">
 
             {/* CH 01: WAV TO MP3 */}
@@ -721,121 +667,7 @@ function App() {
               </div>
             ) : null)}
 
-            {/* CH 02: YOUTUBE TO MP3 */}
-            {(!isMobile && showYoutube) || (isMobile && activeMobileModule === 'youtube') ? (
-              <div className="channel-strip short-channel">
-                <div className="screw top-left" />
-                <div className="screw top-right" />
-                <div className="screw bottom-left" />
-                <div className="screw bottom-right" />
-                <div className="channel-strip-header">
-                  <h2>📺 {UI_TEXT.ytExtractor.title}</h2>
-                  <span className="ch-number">CH 02</span>
-                </div>
-                <p className="channel-desc">{UI_TEXT.ytExtractor.desc}</p>
-                
-                <form
-                  style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    if (!youtubeUrl.trim()) {
-                      setError('請貼上 YouTube 連結');
-                      return;
-                    }
-                    void runAction(() => createYoutubeJob(youtubeUrl.trim()));
-                  }}
-                >
-                  {/* CH 02 Hardware Controls */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div className="console-field" style={{ flex: 1 }}>
-                        <span className="console-field-label">FORMAT</span>
-                        <select className="console-select" value={ytFormat} onChange={(e) => setYtFormat(e.target.value)}>
-                          <option value="mp3">MP3</option>
-                          <option value="wav">WAV</option>
-                          <option value="m4a">M4A</option>
-                          <option value="flac">FLAC</option>
-                        </select>
-                      </div>
-                      <div className="knob-container">
-                        <div className="knob-dial-wrapper">
-                          <div className="knob-ticks" />
-                          <div 
-                            className="knob-rotator" 
-                            style={{ transform: `rotate(${getFormatKnobAngle(ytFormat)}deg)` }}
-                          >
-                            <div className="knob-pointer" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div className="console-field" style={{ flex: 1 }}>
-                        <span className="console-field-label">GAIN</span>
-                        <select className="console-select" value={ytGain} onChange={(e) => setYtGain(e.target.value)}>
-                          <option value="-3">-3dB</option>
-                          <option value="0">0dB</option>
-                          <option value="+3">+3dB</option>
-                          <option value="+6">+6dB</option>
-                        </select>
-                      </div>
-                      <div className="knob-container">
-                        <div className="knob-dial-wrapper">
-                          <div className="knob-ticks" />
-                          <div 
-                            className="knob-rotator" 
-                            style={{ transform: `rotate(${getGainKnobAngle(ytGain)}deg)` }}
-                          >
-                            <div className="knob-pointer" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
-                    <div className="lever-selector-mini" style={{ width: '100%' }}>
-                      <span className="lever-selector-text">VOLUME NORMALIZER</span>
-                      <label className="toggle-lever">
-                        <input
-                          type="checkbox"
-                          checked={ytNormalize}
-                          onChange={(e) => setYtNormalize(e.target.checked)}
-                        />
-                        <div className="switch-track">
-                          <div className="switch-lever" />
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="console-field">
-                    <span className="console-field-label">YOUTUBE URL</span>
-                    <input
-                      className="console-input-text"
-                      type="url"
-                      placeholder={UI_TEXT.ytExtractor.placeholder}
-                      value={youtubeUrl}
-                      onChange={(event) => setYoutubeUrl(event.target.value)}
-                    />
-                  </div>
-                  <button type="submit" className="console-btn btn-accent btn-wide" disabled={isBusyProcessing}>
-                    {busy ? UI_TEXT.ytExtractor.buttonBusy : UI_TEXT.ytExtractor.buttonStart}
-                  </button>
-                </form>
-              </div>
-            ) : (!isMobile ? (
-              <div className="blind-panel short-channel">
-                <div className="screw top-left" />
-                <div className="screw top-right" />
-                <div className="screw bottom-left" />
-                <div className="screw bottom-right" />
-                <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 02</div>
-              </div>
-            ) : null)}
-
-            {/* CH 03: VOCAL SEPARATOR */}
+            {/* CH 02: VOCAL SEPARATOR */}
             {(!isMobile && showVocalSep) || (isMobile && activeMobileModule === 'vocal') ? (
               <div className="channel-strip short-channel">
                 <div className="screw top-left" />
@@ -844,7 +676,7 @@ function App() {
                 <div className="screw bottom-right" />
                 <div className="channel-strip-header">
                   <h2>🎙️ {UI_TEXT.vocalSeparator.title}</h2>
-                  <span className="ch-number">CH 03</span>
+                  <span className="ch-number">CH 02</span>
                 </div>
                 <p className="channel-desc">{UI_TEXT.vocalSeparator.desc}</p>
                 
@@ -947,11 +779,11 @@ function App() {
                 <div className="screw top-right" />
                 <div className="screw bottom-left" />
                 <div className="screw bottom-right" />
-                <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 03</div>
+                <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 02</div>
               </div>
             ) : null)}
 
-            {/* CH 04: STEMS SEPARATOR */}
+            {/* CH 03: STEMS SEPARATOR */}
             {(!isMobile && showStemsSep) || (isMobile && activeMobileModule === 'stems') ? (
               <div className="channel-strip">
                 <div className="screw top-left" />
@@ -960,7 +792,7 @@ function App() {
                 <div className="screw bottom-right" />
                 <div className="channel-strip-header">
                   <h2>🥁 {UI_TEXT.stemsSeparator.title}</h2>
-                  <span className="ch-number">CH 04</span>
+                  <span className="ch-number">CH 03</span>
                 </div>
                 <p className="channel-desc">{UI_TEXT.stemsSeparator.desc}</p>
                 
@@ -1050,7 +882,7 @@ function App() {
                 <div className="screw top-right" />
                 <div className="screw bottom-left" />
                 <div className="screw bottom-right" />
-                <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 04</div>
+                <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 03</div>
               </div>
             ) : null)}
           </div>
@@ -1068,7 +900,7 @@ function App() {
                 <div className="screw bottom-right" />
                 <div className="channel-strip-header">
                   <h2>🎵 {UI_TEXT.pitch.title}</h2>
-                  <span className="ch-number">CH 05</span>
+                  <span className="ch-number">CH 04</span>
                 </div>
                 <p className="channel-desc">{UI_TEXT.pitch.desc}</p>
                 
@@ -1185,7 +1017,7 @@ function App() {
                 <div className="screw top-right" />
                 <div className="screw bottom-left" />
                 <div className="screw bottom-right" />
-                <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 05</div>
+                <div className="blind-panel-text">{UI_TEXT.global.emptyRackSlot} - CH 04</div>
               </div>
             ) : null)}
             </div>

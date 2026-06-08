@@ -9,6 +9,7 @@ soundfile==0.13.1
 librosa==0.11.0
 numpy==1.26.4
 requests==2.32.3
+yt-dlp
 torch
 torchaudio
 torchcodec

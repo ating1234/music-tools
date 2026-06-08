@@ -7,8 +7,8 @@ from rq.exceptions import NoSuchJobError
 
 from .config import MAX_UPLOAD_BYTES, OUTPUTS_DIR, UPLOADS_DIR
 from .analyze import analyze_audio, read_analysis, write_analysis
-from .jobs import enqueue_audio_transform, enqueue_instrument_separation, enqueue_vocal_separation, enqueue_wav_conversion, enqueue_youtube_download, fetch_job, job_payload, queue_overview, list_all_jobs, delete_job_and_files, clean_expired_jobs
-from .schemas import AudioAnalysisResponse, JobResponse, YoutubeJobRequest
+from .jobs import enqueue_audio_transform, enqueue_instrument_separation, enqueue_vocal_separation, enqueue_wav_conversion, fetch_job, job_payload, queue_overview, list_all_jobs, delete_job_and_files, clean_expired_jobs
+from .schemas import AudioAnalysisResponse, JobResponse
 from .storage import analysis_path, ensure_storage_dirs, new_job_id, upload_path, uploaded_file
 
 
@@ -58,12 +58,6 @@ async def create_upload_job(file: UploadFile = File(...)) -> dict[str, object]:
     job = enqueue_wav_conversion(job_id, target, file.filename)
     return job_payload(job)
 
-
-@app.post("/api/jobs/youtube", response_model=JobResponse)
-def create_youtube_job(request: YoutubeJobRequest) -> dict[str, object]:
-    job_id = new_job_id()
-    job = enqueue_youtube_download(job_id, str(request.url))
-    return job_payload(job)
 
 
 @app.post("/api/audio/analyze", response_model=AudioAnalysisResponse)

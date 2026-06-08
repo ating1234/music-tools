@@ -23,7 +23,6 @@ import gradio as gr
 import torch
 
 from app.demucs import separate_vocals as local_separate_vocals, separate_instruments as local_separate_instruments
-from app.youtube import download_youtube_mp3
 from app.analyze import analyze_audio
 from app.audio import transform_audio as local_transform_audio
 
@@ -115,16 +114,6 @@ def separate_instruments_api(audio_file, stems, quality, progress=gr.Progress(tr
     except Exception as e:
         raise gr.Error(f"分離樂器失敗: {str(e)}")
 
-# 5. YouTube 下載 API
-def youtube_download_api(url):
-    try:
-        temp_dir = STORAGE_DIR / "youtube"
-        output_path = download_youtube_mp3(url, temp_dir)
-        return str(output_path)
-    except Exception as e:
-        raise gr.Error(f"YouTube 下載失敗: {str(e)}")
-
-
 # 6. Bug 回報 API
 def submit_bug_api(title, description, email=""):
     import urllib.request
@@ -174,7 +163,8 @@ def submit_bug_api(title, description, email=""):
     url = f"{bug_center_url.rstrip('/')}/api/reports"
     headers = {
         "Content-Type": "application/json",
-        "X-Bug-API-Key": api_key or ""
+        "X-Bug-API-Key": (api_key or "").strip(),
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     data = {
         "app_name": "Music Tools",
@@ -243,12 +233,6 @@ with gr.Blocks(title="Music Tools Engine") as demo:
         btn_stems = gr.Button("Separate Instruments")
         btn_stems.click(fn=separate_instruments_api, inputs=inp_stems, outputs=out_stems, api_name="separate_instruments")
         
-        # YouTube 下載
-        inp_yt = gr.Textbox(label="YouTube URL")
-        out_yt = gr.File(label="Downloaded MP3")
-        btn_yt = gr.Button("Download YT")
-        btn_yt.click(fn=youtube_download_api, inputs=inp_yt, outputs=out_yt, api_name="youtube")
-
         # Bug 回報
         inp_bug = [
             gr.Textbox(label="Title"),

@@ -26,17 +26,6 @@ def enqueue_wav_conversion(job_id: str, input_path: Path, original_name: str) ->
     )
 
 
-def enqueue_youtube_download(job_id: str, url: str) -> Job:
-    return queue.enqueue(
-        "app.tasks.youtube_to_mp3",
-        url,
-        job_id=job_id,
-        job_timeout="2h",
-        result_ttl=86400,
-        failure_ttl=86400,
-        meta={"kind": "youtube_to_mp3", "step": "queued", "progress": 0},
-    )
-
 
 def enqueue_vocal_separation(job_id: str, input_path: Path, original_name: str) -> Job:
     return queue.enqueue(

@@ -6,8 +6,6 @@ from rq import get_current_job
 from .audio import convert_to_mp3, transform_audio
 from .demucs import separate_instruments, separate_vocals
 from .storage import output_dir, safe_filename, temp_dir
-from .youtube import download_youtube_mp3
-
 
 def _set_meta(**values: object) -> None:
     job = get_current_job()
@@ -31,23 +29,6 @@ def convert_wav_to_mp3(input_path: str, original_name: str) -> str:
     _set_meta(step="finished", progress=100, output_path=str(target), output_name=output_name, output_type="audio/mpeg")
     return str(target)
 
-
-def youtube_to_mp3(url: str) -> str:
-    job = get_current_job()
-    if job is None:
-        raise RuntimeError("This task must run inside an RQ worker")
-
-    work_dir = temp_dir(job.id) / "youtube"
-    target_dir = output_dir(job.id)
-    target_dir.mkdir(parents=True, exist_ok=True)
-
-    _set_meta(step="downloading", progress=10)
-    downloaded = download_youtube_mp3(url, work_dir)
-    target = target_dir / "youtube.mp3"
-    shutil.move(str(downloaded), target)
-
-    _set_meta(step="finished", progress=100, output_path=str(target), output_name=target.name, output_type="audio/mpeg")
-    return str(target)
 
 
 def separate_vocals_job(input_path: str, original_name: str) -> str:
