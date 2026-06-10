@@ -1,0 +1,28 @@
+# Robots.txt for Music Tools Studio (https://music-tools.ating123.com)
+# AI and SEO Friendly Configuration
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /backend/
+
+# Specific rules for AI crawlers to ensure they index our tools accurately
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: CohereBot
+Allow: /
+
+Sitemap: https://music-tools.ating123.com/sitemap.xml

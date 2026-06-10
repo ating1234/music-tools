@@ -183,16 +183,16 @@ def separate_instruments_gpu(file_bytes: bytes, filename: str, selected_stems: l
     return res_bytes
 
 # 7. Web Endpoints (提供 FastAPI 同步呼叫)
-# 7. Web Endpoints (提供 FastAPI 同步呼叫)
 @app.function(secrets=[modal.Secret.from_name("music-tools-secrets")])
 @modal.fastapi_endpoint(method="POST")
-def separate_vocals_endpoint(file: bytes, filename: str = "audio.mp3", authorization: str = fastapi.Header(None)):
+async def separate_vocals_endpoint(file: fastapi.UploadFile = fastapi.File(...), filename: str = "audio.mp3", authorization: str = fastapi.Header(None)):
     correct_key = os.environ.get("MUSIC_TOOLS_API_KEY")
     if not authorization or authorization != f"Bearer {correct_key}":
-        return modal.Response(content="Unauthorized", status_code=401)
+        return fastapi.Response(content="Unauthorized", status_code=401)
 
-    zip_data = separate_vocals_gpu.local(file, filename)
-    return modal.Response(
+    file_bytes = await file.read()
+    zip_data = await separate_vocals_gpu.remote.aio(file_bytes, filename)
+    return fastapi.Response(
         content=zip_data,
         media_type="application/zip",
         headers={"Content-Disposition": "attachment; filename=vocals.zip"}
@@ -200,15 +200,16 @@ def separate_vocals_endpoint(file: bytes, filename: str = "audio.mp3", authoriza
 
 @app.function(secrets=[modal.Secret.from_name("music-tools-secrets")])
 @modal.fastapi_endpoint(method="POST")
-def separate_instruments_endpoint(file: bytes, stems: str, filename: str = "audio.mp3", shifts: int = 0, authorization: str = fastapi.Header(None)):
+async def separate_instruments_endpoint(stems: str, file: fastapi.UploadFile = fastapi.File(...), filename: str = "audio.mp3", shifts: int = 0, authorization: str = fastapi.Header(None)):
     correct_key = os.environ.get("MUSIC_TOOLS_API_KEY")
     if not authorization or authorization != f"Bearer {correct_key}":
-        return modal.Response(content="Unauthorized", status_code=401)
+        return fastapi.Response(content="Unauthorized", status_code=401)
 
+    file_bytes = await file.read()
     # stems 透過 HTTP 傳輸是以逗號分隔的字串，例如 "vocals,drums"
     stems_list = [s.strip() for s in stems.split(",") if s.strip()]
-    zip_data = separate_instruments_gpu.local(file, filename, stems_list, shifts)
-    return modal.Response(
+    zip_data = await separate_instruments_gpu.remote.aio(file_bytes, filename, stems_list, shifts)
+    return fastapi.Response(
         content=zip_data,
         media_type="application/zip",
         headers={"Content-Disposition": "attachment; filename=instruments.zip"}

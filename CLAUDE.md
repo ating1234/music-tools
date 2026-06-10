@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-本機使用的 music tools，目標是在 Mac Apple Silicon 上執行，並能透過同一 Wi-Fi 讓手機瀏覽器使用。
+## 本機使用的 music tools，目標是在 Mac Apple Silicon 上執行，並能透過同一 Wi-Fi 讓手機瀏覽器使用。
 
 ## Architecture Decisions
 
