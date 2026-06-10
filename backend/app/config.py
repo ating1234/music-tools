@@ -13,3 +13,6 @@ QUEUE_NAME = os.getenv("QUEUE_NAME", "music-tools")
 DEMUCS_DEVICE = os.getenv("DEMUCS_DEVICE", "cpu")
 
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(500 * 1024 * 1024)))
+
+MODAL_VOCALS_URL = os.getenv("MODAL_VOCALS_URL")
+MODAL_INSTRUMENTS_URL = os.getenv("MODAL_INSTRUMENTS_URL")

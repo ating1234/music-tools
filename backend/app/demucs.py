@@ -32,12 +32,45 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
     if progress_callback:
         progress_callback(10)
 
-    # 直接使用本地設備進行分離 (不再嘗試連線經常受限的外部 GPU Space)
+    # 檢查是否啟用 Modal.com 加速後端
+    from .config import MODAL_VOCALS_URL
+    if MODAL_VOCALS_URL:
+        print("【Music-Tools】偵測到 MODAL_VOCALS_URL，正在發送請求至 Modal GPU 加速端...")
+        try:
+            import requests
+            if progress_callback:
+                progress_callback(30)
+
+            # 讀取本地暫存檔與金鑰，傳送至 Modal GPU 運算
+            import os
+            api_key = os.getenv("MUSIC_TOOLS_API_KEY", "")
+            headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+            with open(input_path, "rb") as f:
+                files = {"file": (input_path.name, f, "audio/mpeg")}
+                response = requests.post(MODAL_VOCALS_URL, files=files, headers=headers, params={"filename": input_path.name})
+
+            if progress_callback:
+                progress_callback(85)
+
+            if response.status_code != 200:
+                raise RuntimeError(f"Modal API 回傳錯誤 ({response.status_code}): {response.text}")
+
+            # 將 Modal 回傳的 ZIP 二進位資料寫入輸出路徑
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(response.content)
+
+            if progress_callback:
+                progress_callback(100)
+            return
+        except Exception as e:
+            raise RuntimeError(f"透過 Modal 進行人聲分離失敗，原因: {str(e)}")
+
+    # 備用方案 (Fallback)：使用本地設備進行分離
+    print("【Music-Tools】未偵測到 MODAL_VOCALS_URL，降級走本地 CPU 分離...")
     try:
         import demucs.api
         
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        # 人聲分離使用預設的 htdemucs 模型 (這比 6s 更輕量，更適合 CPU)
         separator = demucs.api.Separator(
             model="htdemucs",
             device=device,
@@ -56,14 +89,9 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
         vocals_wav = work_dir / "vocals.wav"
         accompaniment_wav = work_dir / "accompaniment.wav"
         
-        # 儲存 vocals 軌道
         demucs.api.save_audio(separated["vocals"], str(vocals_wav), samplerate=separator.samplerate)
         
-        # 混音其餘的軌道作為伴奏 (accompaniment = drums + bass + other)
-        # 在 htdemucs 模型中，stems 為: vocals, drums, bass, other
         accompaniment_stems = [separated[stem] for stem in ["drums", "bass", "other"] if stem in separated]
-        
-        # 將伴奏的所有 stems 混音
         acc_tensor = sum(accompaniment_stems)
         demucs.api.save_audio(acc_tensor, str(accompaniment_wav), samplerate=separator.samplerate)
         
@@ -76,7 +104,7 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
         })
         
         if progress_callback:
-            progress_callback(96)
+            progress_callback(100)
             
     except Exception as e:
         raise RuntimeError(f"本地人聲分離失敗，原因: {str(e)}")
@@ -97,9 +125,47 @@ def separate_instruments(
     if progress_callback:
         progress_callback(10)
 
+    # 檢查是否啟用 Modal.com 加速後端
+    from .config import MODAL_INSTRUMENTS_URL
+    if MODAL_INSTRUMENTS_URL:
+        print("【Music-Tools】偵測到 MODAL_INSTRUMENTS_URL，正在發送請求至 Modal GPU 加速端...")
+        try:
+            import requests
+            if progress_callback:
+                progress_callback(30)
+
+            # 讀取本地暫存檔與金鑰，傳送至 Modal GPU 運算
+            import os
+            api_key = os.getenv("MUSIC_TOOLS_API_KEY", "")
+            headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+            with open(input_path, "rb") as f:
+                files = {"file": (input_path.name, f, "audio/mpeg")}
+                params = {
+                    "stems": ",".join(selected),
+                    "filename": input_path.name,
+                    "shifts": shifts
+                }
+                response = requests.post(MODAL_INSTRUMENTS_URL, files=files, headers=headers, params=params)
+
+            if progress_callback:
+                progress_callback(85)
+
+            if response.status_code != 200:
+                raise RuntimeError(f"Modal API 回傳錯誤 ({response.status_code}): {response.text}")
+
+            # 將 Modal 回傳的 ZIP 二進位資料寫入輸出路徑
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(response.content)
+
+            if progress_callback:
+                progress_callback(100)
+            return
+        except Exception as e:
+            raise RuntimeError(f"透過 Modal 進行樂器分離失敗，原因: {str(e)}")
+
+    # 備用方案 (Fallback)：使用本地設備進行分離
+    print("【Music-Tools】未偵測到 MODAL_INSTRUMENTS_URL，降級走本地 CPU 分離...")
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    
-    # 建立 Separator (使用 htdemucs_6s 模型)
     separator = demucs.api.Separator(
         model="htdemucs_6s",
         device=device,
@@ -109,13 +175,11 @@ def separate_instruments(
     if progress_callback:
         progress_callback(30)
 
-    # 執行分離
     origin, separated = separator.separate_audio_file(str(input_path))
     
     if progress_callback:
         progress_callback(80)
 
-    # 儲存所有 6 個軌道到工作目錄
     work_dir.mkdir(parents=True, exist_ok=True)
     stems: dict[str, Path] = {}
     for stem_name in MODEL_STEMS_6S:
@@ -126,14 +190,12 @@ def separate_instruments(
     if progress_callback:
         progress_callback(88)
 
-    # 處理選取的聲部與其餘聲部的混音
     selected_paths = {stem_name: stems[stem_name] for stem_name in selected}
     remainder_paths = [path for stem_name, path in stems.items() if stem_name not in selected]
     remainder_name = "remaining" if "other" in selected else "other"
     mixes = {remainder_name: remainder_paths} if remainder_paths else None
     
-    # 轉為 MP3 並壓縮成 ZIP
     _zip_mp3s(output_path, selected_paths, mixes)
     
     if progress_callback:
-        progress_callback(96)
+        progress_callback(100)
