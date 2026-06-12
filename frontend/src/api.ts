@@ -56,7 +56,11 @@ function cleanApiBase(url: string): string {
 let clientPromise: Promise<any> | null = null;
 async function getClient() {
   if (!clientPromise) {
-    clientPromise = Client.connect(cleanApiBase(API_BASE), { events: ["data", "status"] });
+    const api_key = import.meta.env.VITE_MTS_ENGINE_SECRET || "";
+    clientPromise = Client.connect(cleanApiBase(API_BASE), { 
+      events: ["data", "status"],
+      headers: api_key ? { "Authorization": `Bearer ${api_key}` } : {}
+    });
   }
   return clientPromise;
 }

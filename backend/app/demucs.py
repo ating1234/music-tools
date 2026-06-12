@@ -43,7 +43,7 @@ def separate_vocals(input_path: Path, work_dir: Path, output_path: Path, progres
 
             # 讀取本地暫存檔與金鑰，傳送至 Modal GPU 運算
             import os
-            api_key = os.getenv("MUSIC_TOOLS_API_KEY", "")
+            api_key = os.getenv("MTS_ENGINE_SECRET", "")
             headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
             with open(input_path, "rb") as f:
                 files = {"file": (input_path.name, f, "audio/mpeg")}
@@ -136,7 +136,7 @@ def separate_instruments(
 
             # 讀取本地暫存檔與金鑰，傳送至 Modal GPU 運算
             import os
-            api_key = os.getenv("MUSIC_TOOLS_API_KEY", "")
+            api_key = os.getenv("MTS_ENGINE_SECRET", "")
             headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
             with open(input_path, "rb") as f:
                 files = {"file": (input_path.name, f, "audio/mpeg")}

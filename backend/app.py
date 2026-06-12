@@ -30,8 +30,25 @@ from app.audio import transform_audio as local_transform_audio
 STORAGE_DIR = Path("/tmp/gradio-music-tools")
 STORAGE_DIR.mkdir(parents=True, exist_ok=True)
 
+def verify_gradio_api_key(request: gr.Request):
+    correct_key = os.environ.get("MTS_ENGINE_SECRET")
+    if not correct_key:
+        raise gr.Error("伺服器未配置 API 金鑰 (MTS_ENGINE_SECRET)")
+    
+    if not request or not request.headers:
+        raise gr.Error("未授權存取：缺少 Request Headers")
+        
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise gr.Error("未授權存取：缺少 Bearer Token")
+    
+    token = auth_header.split(" ")[1]
+    if token != correct_key:
+        raise gr.Error("未授權存取：無效的 API 金鑰")
+
 # 1. 音訊分析 API
-def analyze_api(audio_file):
+def analyze_api(audio_file, request: gr.Request = None):
+    verify_gradio_api_key(request)
     if not audio_file:
         return {"error": "No file uploaded"}
     try:
@@ -41,7 +58,8 @@ def analyze_api(audio_file):
         return {"error": str(e)}
 
 # 2. 變速變調 API
-def transform_api(audio_file, semitones, target_bpm):
+def transform_api(audio_file, semitones, target_bpm, request: gr.Request = None):
+    verify_gradio_api_key(request)
     if not audio_file:
         return None
     try:
@@ -67,7 +85,8 @@ def transform_api(audio_file, semitones, target_bpm):
         raise gr.Error(f"處理失敗: {str(e)}")
 
 # 3. 人聲分離 API (不再需要 GPU，因為外包給了 abidlabs/music-separation)
-def separate_vocals_api(audio_file, progress=gr.Progress(track_tqdm=True)):
+def separate_vocals_api(audio_file, request: gr.Request = None, progress=gr.Progress(track_tqdm=True)):
+    verify_gradio_api_key(request)
     if not audio_file:
         return None
     try:
@@ -87,7 +106,8 @@ def separate_vocals_api(audio_file, progress=gr.Progress(track_tqdm=True)):
         raise gr.Error(f"分離人聲失敗: {str(e)}")
 
 # 4. 樂器分離 API (在本地 CPU 上運行)
-def separate_instruments_api(audio_file, stems, quality, progress=gr.Progress(track_tqdm=True)):
+def separate_instruments_api(audio_file, stems, quality, request: gr.Request = None, progress=gr.Progress(track_tqdm=True)):
+    verify_gradio_api_key(request)
     if not audio_file or not stems:
         return None
     try:
@@ -115,7 +135,8 @@ def separate_instruments_api(audio_file, stems, quality, progress=gr.Progress(tr
         raise gr.Error(f"分離樂器失敗: {str(e)}")
 
 # 6. Bug 回報 API
-def submit_bug_api(title, description, email=""):
+def submit_bug_api(title, description, email="", request: gr.Request = None):
+    verify_gradio_api_key(request)
     import urllib.request
     import json
     import os

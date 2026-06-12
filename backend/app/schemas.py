@@ -1,9 +1,6 @@
 from pydantic import BaseModel, HttpUrl
 
 
-class YoutubeJobRequest(BaseModel):
-    url: HttpUrl
-
 
 class JobResponse(BaseModel):
     id: str

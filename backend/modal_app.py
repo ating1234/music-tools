@@ -186,7 +186,7 @@ def separate_instruments_gpu(file_bytes: bytes, filename: str, selected_stems: l
 @app.function(secrets=[modal.Secret.from_name("music-tools-secrets")])
 @modal.fastapi_endpoint(method="POST")
 async def separate_vocals_endpoint(file: fastapi.UploadFile = fastapi.File(...), filename: str = "audio.mp3", authorization: str = fastapi.Header(None)):
-    correct_key = os.environ.get("MUSIC_TOOLS_API_KEY")
+    correct_key = os.environ.get("MTS_ENGINE_SECRET")
     if not authorization or authorization != f"Bearer {correct_key}":
         return fastapi.Response(content="Unauthorized", status_code=401)
 
@@ -201,7 +201,7 @@ async def separate_vocals_endpoint(file: fastapi.UploadFile = fastapi.File(...),
 @app.function(secrets=[modal.Secret.from_name("music-tools-secrets")])
 @modal.fastapi_endpoint(method="POST")
 async def separate_instruments_endpoint(stems: str, file: fastapi.UploadFile = fastapi.File(...), filename: str = "audio.mp3", shifts: int = 0, authorization: str = fastapi.Header(None)):
-    correct_key = os.environ.get("MUSIC_TOOLS_API_KEY")
+    correct_key = os.environ.get("MTS_ENGINE_SECRET")
     if not authorization or authorization != f"Bearer {correct_key}":
         return fastapi.Response(content="Unauthorized", status_code=401)
 

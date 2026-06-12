@@ -2,6 +2,7 @@ import sqlite3
 import json
 import hashlib
 import uuid
+import secrets
 from pathlib import Path
 
 DB_FILE = Path(__file__).parent / "bug_center.db"
@@ -37,6 +38,14 @@ def init_db():
     );
     """)
     
+    # 建立 Sessions 資料表
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS sessions (
+        session_id TEXT PRIMARY KEY,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+    
     conn.commit()
     
     # 初始化預設值
@@ -47,7 +56,7 @@ def init_db():
     # 2. 預設管理員密碼雜湊 (預設密碼為: admin1234)
     if not get_setting("password_hash"):
         default_pw = "admin1234"
-        pw_hash = hashlib.sha256(default_pw.encode('utf-8')).hexdigest()
+        pw_hash = hash_password(default_pw)
         set_setting("password_hash", pw_hash)
         
     # 3. 預設 Telegram 欄位
@@ -131,16 +140,69 @@ def delete_report(report_id):
     conn.commit()
     conn.close()
 
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    iterations = 100000
+    hash_bytes = hashlib.pbkdf2_hmac(
+        'sha256',
+        password.encode('utf-8'),
+        salt.encode('utf-8'),
+        iterations
+    )
+    return f"pbkdf2_sha256${iterations}${salt}${hash_bytes.hex()}"
+
 def verify_password(password):
     if not password:
         return False
-    pw_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
-    stored_hash = get_setting("password_hash")
-    return pw_hash == stored_hash
+    stored_val = get_setting("password_hash")
+    if not stored_val:
+        return False
+    
+    if not stored_val.startswith("pbkdf2_sha256$"):
+        # 兼容舊的 sha256 雜湊
+        pw_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        return pw_hash == stored_val
+        
+    try:
+        algo, iterations_str, salt, stored_hash = stored_val.split("$")
+        iterations = int(iterations_str)
+        hash_bytes = hashlib.pbkdf2_hmac(
+            'sha256',
+            password.encode('utf-8'),
+            salt.encode('utf-8'),
+            iterations
+        )
+        return hash_bytes.hex() == stored_hash
+    except Exception:
+        return False
 
 def update_password(new_password):
-    pw_hash = hashlib.sha256(new_password.encode('utf-8')).hexdigest()
+    pw_hash = hash_password(new_password)
     set_setting("password_hash", pw_hash)
+
+def add_session(session_id: str) -> None:
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR REPLACE INTO sessions (session_id) VALUES (?)", (session_id,))
+    conn.commit()
+    conn.close()
+
+def verify_session(session_id: str) -> bool:
+    if not session_id:
+        return False
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT session_id FROM sessions WHERE session_id = ?", (session_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return row is not None
+
+def delete_session(session_id: str) -> None:
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
+    conn.commit()
+    conn.close()
 
 # 初始化
 init_db()

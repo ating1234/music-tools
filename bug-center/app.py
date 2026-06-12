@@ -18,8 +18,7 @@ TEMPLATES_DIR = Path(__file__).parent / "templates"
 TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# 單次運行隨機 Session Key，重啟即失效，防止偽造
-SESSION_KEY = str(uuid.uuid4())
+# 已經改用 sqlite 儲存 sessions，故不再需要全域 SESSION_KEY
 
 # 輔助：驗證 Telegram 並發送
 def trigger_telegram_bot(title, description, email, app_name):
@@ -65,9 +64,7 @@ def trigger_telegram_bot(title, description, email, app_name):
 # 認證中介：確認是否已登入
 def get_current_user(request: Request):
     session_cookie = request.cookies.get("admin_session")
-    if session_cookie != SESSION_KEY:
-        return False
-    return True
+    return db.verify_session(session_cookie)
 
 # 1. 對接 API：接收外部 Bug 回報
 @app.post("/api/reports")
@@ -115,7 +112,8 @@ async def receive_report(request: Request, x_bug_api_key: str = Header(None, ali
 # 2. 登入頁面
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    if request.cookies.get("admin_session") == SESSION_KEY:
+    session_cookie = request.cookies.get("admin_session")
+    if db.verify_session(session_cookie):
         return RedirectResponse(url="/admin")
     return templates.TemplateResponse("login.html", {"request": request, "error": None})
 
@@ -123,14 +121,26 @@ def login_page(request: Request):
 @app.post("/login")
 def login(request: Request, password: str = Form(...)):
     if db.verify_password(password):
+        session_id = str(uuid.uuid4())
+        db.add_session(session_id)
         response = RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
-        response.set_cookie(key="admin_session", value=SESSION_KEY, httponly=True, samesite="lax")
+        # 啟用 secure=True 以防範 HTTP 傳輸洩漏，啟用 samesite="strict" 提高安全性
+        response.set_cookie(
+            key="admin_session", 
+            value=session_id, 
+            httponly=True, 
+            samesite="strict", 
+            secure=True
+        )
         return response
     return templates.TemplateResponse("login.html", {"request": request, "error": "密碼錯誤！"})
 
 # 4. 登出
 @app.get("/logout")
-def logout():
+def logout(request: Request):
+    session_cookie = request.cookies.get("admin_session")
+    if session_cookie:
+        db.delete_session(session_cookie)
     response = RedirectResponse(url="/login")
     response.delete_cookie("admin_session")
     return response
