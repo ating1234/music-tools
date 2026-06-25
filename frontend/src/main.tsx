@@ -419,6 +419,19 @@ function App() {
                 採用網路上的免費資源，所以轉檔速度慢，請耐心等待！
               </div>
               <div className="api-node">{UI_TEXT.global.apiBase}{API_BASE}</div>
+              {isMobile && (
+                <div style={{ marginTop: '12px' }}>
+                  <button 
+                    type="button" 
+                    onClick={startPageAgent} 
+                    className="studio-footer-link link-agent" 
+                    disabled={isAgentLoading}
+                    style={{ fontSize: '0.85rem', padding: '6px 14px' }}
+                  >
+                    {isAgentLoading ? '載入中...' : '🤖 AI 網頁助手'}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Module Power Distribution Board */}
@@ -523,6 +536,17 @@ function App() {
                   </div>
                 </div>
                 <div className="vu-master-label">MASTER</div>
+                <div style={{ marginTop: '8px', width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <button 
+                    type="button" 
+                    onClick={startPageAgent} 
+                    className="studio-footer-link link-agent" 
+                    disabled={isAgentLoading}
+                    style={{ fontSize: '0.8rem', padding: '5px 12px', width: '100%', justifyContent: 'center' }}
+                  >
+                    {isAgentLoading ? '載入中...' : '🤖 AI 網頁助手'}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -1213,8 +1237,6 @@ function App() {
         <div className="studio-footer-content">
           <span className="studio-footer-text">
             系統破防了？👉 <button type="button" onClick={() => setBugModalOpen(true)} className="studio-footer-link link-bug">回報 Bug</button>
-            <span className="studio-footer-divider">|</span>
-            🤖 AI 網頁助手 👉 <button type="button" onClick={startPageAgent} className="studio-footer-link link-agent" disabled={isAgentLoading}>{isAgentLoading ? '載入中...' : '啟動助手'}</button>
           </span>
         </div>
       </footer>
