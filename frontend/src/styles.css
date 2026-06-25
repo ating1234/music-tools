@@ -2051,6 +2051,25 @@ body {
   text-shadow: 0 0 8px rgba(255, 162, 23, 0.6);
 }
 
+/* AI 助手 - 青綠色發光調（與 AI 科技感匹配） */
+.studio-footer-link.link-agent {
+  color: #64ffda;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #25272c;
+  cursor: pointer;
+}
+.studio-footer-link.link-agent:hover:not(:disabled) {
+  color: #14ffc2;
+  background: rgba(20, 255, 194, 0.1);
+  border-color: #00ffcc;
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.35);
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
+}
+.studio-footer-link.link-agent:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 640px) {
   .studio-footer {
     padding: 20px 12px;

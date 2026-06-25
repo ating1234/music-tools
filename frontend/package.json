@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@gradio/client": "^2.2.1",
+    "page-agent": "^1.10.0",
     "react": "latest",
     "react-dom": "latest"
   },

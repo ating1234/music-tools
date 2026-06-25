@@ -102,6 +102,32 @@ function App() {
   // 手機版單頁 RWD 選單狀態
   const [isMobile, setIsMobile] = useState(false);
   const [activeMobileModule, setActiveMobileModule] = useState<'menu' | 'wav' | 'vocal' | 'stems' | 'pitch'>('menu');
+  const [isAgentLoading, setIsAgentLoading] = useState(false);
+  const agentRef = useRef<any>(null);
+
+  const startPageAgent = async () => {
+    if (agentRef.current) {
+      agentRef.current.panel.show();
+      return;
+    }
+    setIsAgentLoading(true);
+    try {
+      const { PageAgent } = await import('page-agent');
+      const agent = new PageAgent({
+        baseURL: `${window.location.origin}/api`,
+        apiKey: 'cf-managed-secret',
+        model: 'placeholder-model',
+        language: 'zh-CN'
+      });
+      agentRef.current = agent;
+      agent.panel.show();
+    } catch (err) {
+      console.error('Failed to start PageAgent:', err);
+      setError('無法啟動 AI 網頁助手。');
+    } finally {
+      setIsAgentLoading(false);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -1187,6 +1213,8 @@ function App() {
         <div className="studio-footer-content">
           <span className="studio-footer-text">
             系統破防了？👉 <button type="button" onClick={() => setBugModalOpen(true)} className="studio-footer-link link-bug">回報 Bug</button>
+            <span className="studio-footer-divider">|</span>
+            🤖 AI 網頁助手 👉 <button type="button" onClick={startPageAgent} className="studio-footer-link link-agent" disabled={isAgentLoading}>{isAgentLoading ? '載入中...' : '啟動助手'}</button>
           </span>
         </div>
       </footer>
