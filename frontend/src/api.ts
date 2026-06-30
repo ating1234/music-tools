@@ -183,7 +183,7 @@ export async function uploadWav(file: File): Promise<Job> {
     } catch (err) {
       if (progressTimer) clearInterval(progressTimer);
       job.status = 'failed';
-      job.error = err instanceof Error ? err.message : String(err);
+      job.error = `[API: ${API_BASE}] ${err instanceof Error ? err.message : String(err)}`;
       activeJobs.set(jobId, { ...job });
     }
   })();
