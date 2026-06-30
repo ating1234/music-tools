@@ -38,6 +38,11 @@ function cleanApiBase(url: string): string {
     clean = clean.slice(0, -1);
   }
   
+  // 強制將特定的實體網址轉換為官方的 Space ID 格式，避開平台後台環境變數被寫死的 CORS 問題
+  if (clean.includes("ating1234-music-tool-backend.hf.space")) {
+    return "ating1234/music-tool-backend";
+  }
+  
   // 匹配 https://huggingface.co/spaces/username/spacename 格式並轉為 username/spacename
   const spaceMatch = clean.match(/huggingface\.co\/spaces\/([^/]+)\/([^/]+)/);
   if (spaceMatch) {
