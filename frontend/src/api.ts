@@ -3,16 +3,24 @@ import { Client } from "@gradio/client";
 // 攔截並優化全域 fetch 請求，解決 Hugging Face CORS 認證機制錯誤
 const originalFetch = window.fetch;
 window.fetch = function (input, init) {
-  if (init && init.credentials === "include") {
-    const url = typeof input === "string" 
-      ? input 
-      : (input instanceof URL ? input.toString() : (input as Request).url);
+  const url = typeof input === "string" 
+    ? input 
+    : (input instanceof URL ? input.toString() : (input as Request).url);
+  
+  if (url && (url.includes("hf.space") || url.includes("huggingface.co"))) {
+    const newInit = init ? { ...init } : {};
+    newInit.credentials = "same-origin"; // 確保覆寫傳入的 init
     
-    if (url && (url.includes("hf.space") || url.includes("huggingface.co"))) {
-      const newInit = { ...init };
-      newInit.credentials = "same-origin"; // 強制改為 same-origin 規避憑證標頭遺失導致的 CORS 封鎖
-      return originalFetch(input, newInit);
+    // 如果 input 是 Request 物件，必須透過建構子重建它，才能覆寫唯讀的 credentials 屬性
+    if (typeof input !== "string" && !(input instanceof URL)) {
+      try {
+        const newRequest = new Request(input, { credentials: "same-origin" });
+        return originalFetch(newRequest, newInit);
+      } catch (e) {
+        return originalFetch(input, newInit);
+      }
     }
+    return originalFetch(input, newInit);
   }
   return originalFetch(input, init);
 };
